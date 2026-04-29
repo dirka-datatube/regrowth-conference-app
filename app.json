@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "REGROWTH Conference",
+    "slug": "regrowth-conference-app",
+    "scheme": "regrowth",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#04072F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "au.com.regrowth.conference",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "We use the camera so you can scan attendee QR codes and capture business cards to grow your network.",
+        "NSPhotoLibraryUsageDescription": "We use your photo library to add profile photos and event memories to your gallery.",
+        "NSLocationWhenInUseUsageDescription": "We use your location to check you into the venue and surface what's happening near you.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": ["applinks:regrowth.au"]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#04072F"
+      },
+      "package": "au.com.regrowth.conference"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "REGROWTH uses the camera so you can scan attendee QR codes and capture business cards."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#D17F5D"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "REGROWTH uses your location to check you into the venue."
+        }
+      ],
+      "sentry-expo"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    },
+    "owner": "regrowth"
+  }
+}

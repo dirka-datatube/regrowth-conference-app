@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../supabase';
 import { useAppStore } from '../store';
+import { IS_DEMO, demoAttendee } from '../demo';
 import type { Attendee } from '@/types/database';
 
 export function useAttendee() {
@@ -12,6 +13,7 @@ export function useAttendee() {
     queryKey: ['attendee', session?.user.id],
     enabled: !!session,
     queryFn: async () => {
+      if (IS_DEMO) return demoAttendee;
       if (!session) return null;
       const { data, error } = await supabase
         .from('attendees')

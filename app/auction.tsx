@@ -9,6 +9,7 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoAuction } from '@/lib/demo';
 
 export default function Auction() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -20,6 +21,7 @@ export default function Auction() {
     queryKey: ['auction', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoAuction;
       const { data, error } = await supabase
         .from('auction_items')
         .select('*')
@@ -33,7 +35,7 @@ export default function Auction() {
 
   // Realtime — refresh on any bid update.
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || IS_DEMO) return;
     const channel = supabase
       .channel(`auction:${eventId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'auction_items' }, () => {

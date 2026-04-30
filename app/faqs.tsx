@@ -7,6 +7,7 @@ import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoFaqs } from '@/lib/demo';
 
 export default function Faqs() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -16,6 +17,7 @@ export default function Faqs() {
     queryKey: ['faqs', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoFaqs;
       const { data, error } = await supabase
         .from('faqs')
         .select('*')

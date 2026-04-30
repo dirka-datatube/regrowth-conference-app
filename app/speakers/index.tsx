@@ -7,6 +7,7 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoSpeakers } from '@/lib/demo';
 
 export default function Speakers() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -14,6 +15,7 @@ export default function Speakers() {
     queryKey: ['speakers', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoSpeakers;
       const { data, error } = await supabase
         .from('speakers')
         .select('id, name, title, company, headshot_url, tags')

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../supabase';
 import { useAppStore } from '../store';
+import { IS_DEMO, demoSuggestions } from '../demo';
 
 // Daily Claude-generated suggestions (3 attendees, 2 partners). Cached
 // per-day in daily_suggestions and re-resolved on the client to fetch the
@@ -11,6 +12,7 @@ export function useSuggestions() {
     queryKey: ['suggestions', attendeeId],
     enabled: !!attendeeId,
     queryFn: async () => {
+      if (IS_DEMO) return demoSuggestions;
       if (!attendeeId) return null;
       const today = new Date().toISOString().slice(0, 10);
 

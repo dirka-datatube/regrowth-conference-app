@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoNotes } from '@/lib/demo';
 
 export default function Notes() {
   const attendeeId = useAppStore((s) => s.attendee?.id);
@@ -15,6 +16,7 @@ export default function Notes() {
     queryKey: ['notes', attendeeId],
     enabled: !!attendeeId,
     queryFn: async () => {
+      if (IS_DEMO) return demoNotes;
       const { data, error } = await supabase
         .from('notes')
         .select(`id, body, ai_summary, updated_at, session:sessions(id, title, start_at)`)

@@ -7,6 +7,7 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoPodcast } from '@/lib/demo';
 
 export default function Podcast() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -14,6 +15,7 @@ export default function Podcast() {
     queryKey: ['podcast', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoPodcast;
       const { data, error } = await supabase
         .from('podcast_episodes')
         .select('*')

@@ -7,6 +7,7 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoPartners } from '@/lib/demo';
 
 export default function Partners() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -14,6 +15,7 @@ export default function Partners() {
     queryKey: ['partners', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoPartners;
       const { data, error } = await supabase
         .from('partners')
         .select('id, name, logo_url, description, is_featured, tags')

@@ -9,6 +9,28 @@ is a separate Lovable / Next.js project — both share this Supabase project.
 
 ---
 
+## Quick preview (no Supabase, no fonts, no setup)
+
+Three commands and you'll be clicking around the app in your browser with
+canned data. No accounts, no env vars, no database.
+
+```bash
+git checkout claude/regrowth-conference-app-4EqIq
+npm install
+npm run demo
+```
+
+This opens Metro on `http://localhost:8081` — press `w` (or it'll auto-open
+the web version). The app loads as the demo attendee "Kylie Walsh" with
+sample sessions, speakers, partners, suggestions, auction items and Q&A.
+Writes (bidding, taking notes, submitting questions) won't persist —
+demo mode is read-only by design.
+
+> On Windows: `set EXPO_PUBLIC_DEMO_MODE=true && npm run web`
+> Camera-based features (QR scan, business card OCR) won't work in a browser.
+
+---
+
 ## Stack
 
 | Concern | Choice |

@@ -4,18 +4,20 @@ import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { useAttendee } from '@/lib/hooks/useAttendee';
 import { registerForPush } from '@/lib/push';
+import { IS_DEMO } from '@/lib/demo';
 
 export default function TabsLayout() {
   const session = useAppStore((s) => s.session);
   const { data: attendee } = useAttendee();
 
   useEffect(() => {
+    if (IS_DEMO) return;
     if (attendee?.id) {
       registerForPush(attendee.id).catch(() => {});
     }
   }, [attendee?.id]);
 
-  if (!session) return <Redirect href="/(auth)/welcome" />;
+  if (!session && !IS_DEMO) return <Redirect href="/(auth)/welcome" />;
 
   return (
     <Tabs

@@ -9,6 +9,7 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoQuestions } from '@/lib/demo';
 
 export default function Questions() {
   const params = useLocalSearchParams<{ session_id?: string; speaker_id?: string }>();
@@ -22,6 +23,7 @@ export default function Questions() {
     queryKey: ['questions', me?.event_id, params.session_id, params.speaker_id],
     enabled: !!me?.event_id,
     queryFn: async () => {
+      if (IS_DEMO) return demoQuestions;
       let query = supabase
         .from('questions')
         .select('id, body, anonymous, upvotes, status, attendee:attendees(name)')
@@ -37,7 +39,7 @@ export default function Questions() {
 
   // Realtime — refresh when a question is approved or upvoted.
   useEffect(() => {
-    if (!me?.event_id) return;
+    if (!me?.event_id || IS_DEMO) return;
     const channel = supabase
       .channel(`questions:${me.event_id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'questions' }, () => {

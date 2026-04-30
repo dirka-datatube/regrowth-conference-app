@@ -8,6 +8,7 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoPartners } from '@/lib/demo';
 
 const FILTERS = ['all', 'recruitment', 'tech', 'marketing', 'banking', 'training'] as const;
 type Filter = (typeof FILTERS)[number];
@@ -22,6 +23,7 @@ export default function Solutions() {
     queryKey: ['partners-solutions', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoPartners;
       const { data, error } = await supabase
         .from('partners')
         .select('id, name, description, solutions_content, tags')

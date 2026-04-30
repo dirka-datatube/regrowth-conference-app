@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../supabase';
 import { useAppStore } from '../store';
+import { IS_DEMO, demoSessions } from '../demo';
 
 export function useSessions() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -8,6 +9,7 @@ export function useSessions() {
     queryKey: ['sessions', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoSessions;
       const { data, error } = await supabase
         .from('sessions')
         .select(
@@ -29,6 +31,7 @@ export function useMySchedule() {
     queryKey: ['schedule_picks', attendeeId],
     enabled: !!attendeeId,
     queryFn: async () => {
+      if (IS_DEMO) return new Set<string>(['sess1', 'sess2']);
       const { data, error } = await supabase
         .from('schedule_picks')
         .select('session_id')
@@ -46,6 +49,7 @@ export function useHappeningNow() {
     enabled: !!eventId,
     refetchInterval: 1000 * 60,
     queryFn: async () => {
+      if (IS_DEMO) return [demoSessions[0]];
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('sessions')
@@ -67,6 +71,7 @@ export function useUpNext() {
     enabled: !!eventId,
     refetchInterval: 1000 * 60,
     queryFn: async () => {
+      if (IS_DEMO) return [demoSessions[1]];
       const now = new Date();
       const in30 = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
       const { data, error } = await supabase

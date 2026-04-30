@@ -8,6 +8,7 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoOtherAttendees } from '@/lib/demo';
 
 export default function Attendees() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -18,6 +19,16 @@ export default function Attendees() {
     queryKey: ['attendees', eventId, q],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) {
+        const ql = q.toLowerCase();
+        return demoOtherAttendees.filter(
+          (a) =>
+            !ql ||
+            a.name.toLowerCase().includes(ql) ||
+            (a.role ?? '').toLowerCase().includes(ql) ||
+            (a.company ?? '').toLowerCase().includes(ql),
+        );
+      }
       let query = supabase
         .from('attendees')
         .select('id, name, role, company, photo_url, interests')

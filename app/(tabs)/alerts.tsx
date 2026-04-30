@@ -6,6 +6,7 @@ import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoAlerts } from '@/lib/demo';
 
 export default function Alerts() {
   const attendeeId = useAppStore((s) => s.attendee?.id);
@@ -13,6 +14,7 @@ export default function Alerts() {
     queryKey: ['my-alerts', attendeeId],
     enabled: !!attendeeId,
     queryFn: async () => {
+      if (IS_DEMO) return demoAlerts;
       const { data, error } = await supabase
         .from('notification_recipients')
         .select(

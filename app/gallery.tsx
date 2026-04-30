@@ -6,6 +6,7 @@ import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import { IS_DEMO, demoGallery } from '@/lib/demo';
 
 export default function Gallery() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -13,6 +14,7 @@ export default function Gallery() {
     queryKey: ['gallery', eventId],
     enabled: !!eventId,
     queryFn: async () => {
+      if (IS_DEMO) return demoGallery;
       const { data, error } = await supabase
         .from('gallery_items')
         .select('*')

@@ -6,6 +6,10 @@ is a separate Lovable / Next.js project — both share this Supabase project.
 
 > Build prompt and requirements: see the project brief shared with the team.
 > Brand guidelines: REGROWTH brand PDF (palette, fonts, voice).
+>
+> **Production roadmap:** [`docs/ROADMAP.md`](docs/ROADMAP.md) — current state,
+> known defects, and five ordered sprint briefs in [`docs/sprints/`](docs/sprints/)
+> written so a human or an AI agent can execute them one by one.
 
 ---
 

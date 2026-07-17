@@ -46,13 +46,28 @@ export default function NewNote() {
     })();
   }, [me, session_id]);
 
-  // Debounced autosave.
+  // Debounced autosave with retry + visible status. Never lose a word.
+  const [saveState, setSaveState] = useState<'saved' | 'saving' | 'retrying'>('saved');
   useEffect(() => {
     if (!noteId) return;
-    const t = setTimeout(() => {
-      supabase.from('notes').update({ body }).eq('id', noteId);
+    let cancelled = false;
+    setSaveState('saving');
+    const t = setTimeout(async () => {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { error } = await supabase.from('notes').update({ body }).eq('id', noteId);
+        if (cancelled) return;
+        if (!error) {
+          setSaveState('saved');
+          return;
+        }
+        setSaveState('retrying');
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      }
     }, 500);
-    return () => clearTimeout(t);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
   }, [body, noteId]);
 
   async function summarise() {
@@ -70,7 +85,9 @@ export default function NewNote() {
         <Pressable onPress={() => router.back()} hitSlop={10}>
           <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
         </Pressable>
-        <T variant="caption">Notes saved automatically</T>
+        <T variant="caption">
+          {saveState === 'saved' ? 'Saved ✓' : saveState === 'saving' ? 'Saving…' : 'Reconnecting…'}
+        </T>
       </View>
 
       {sessionTitle && <T variant="caption" className="text-earth normal-case tracking-normal mt-4">{sessionTitle}</T>}

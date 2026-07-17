@@ -88,7 +88,7 @@ export default function AttendeeDetail() {
 
       {a.interests?.length > 0 && (
         <View className="mt-6 flex-row flex-wrap justify-center gap-2">
-          {a.interests.map((tag) => (
+          {a.interests.map((tag: string) => (
             <View key={tag} className="bg-snow/5 border border-snow/10 rounded-pill px-3 py-1">
               <T variant="caption" className="normal-case tracking-normal text-cloud">{tag}</T>
             </View>

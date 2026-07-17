@@ -74,7 +74,7 @@ export default function NoteDetail() {
         <View className="mt-6">
           <T variant="sub">Follow-up questions</T>
           <Card className="mt-3">
-            {data.follow_up_questions.map((q, i) => (
+            {data.follow_up_questions.map((q: string, i: number) => (
               <T variant="body" key={i} className={i > 0 ? 'mt-2' : ''}>• {q}</T>
             ))}
           </Card>

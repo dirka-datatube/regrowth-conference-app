@@ -39,7 +39,7 @@ export default function Partners() {
       <T variant="h1" className="mt-2">The brands powering REGROWTH®</T>
 
       <View className="mt-6 gap-y-3">
-        {data?.map((p) => (
+        {data?.map((p: any) => (
           <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
             <View className="flex-row items-center">
               {p.logo_url ? (

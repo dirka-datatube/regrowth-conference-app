@@ -37,7 +37,7 @@ export default function Solutions() {
   const filtered = useMemo(() => {
     if (!partners) return [];
     if (filter === 'all') return partners;
-    return partners.filter((p) => p.tags?.includes(filter));
+    return partners.filter((p: any) => p.tags?.includes(filter));
   }, [partners, filter]);
 
   return (
@@ -65,7 +65,7 @@ export default function Solutions() {
       </View>
 
       <View className="mt-6 gap-y-3">
-        {filtered.map((p) => (
+        {filtered.map((p: any) => (
           <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
             <T variant="h3">{p.name}</T>
             {p.description && <T variant="body" className="mt-1 text-cloud/80" numberOfLines={2}>{p.description}</T>}

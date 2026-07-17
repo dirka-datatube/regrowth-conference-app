@@ -1,9 +1,10 @@
 import { Modal, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import QRCode from 'react-native-qrcode-svg';
 import { T } from './Type';
 
-// Simple SVG-based QR placeholder. Wire `react-native-qrcode-svg` (no extra
-// native deps) once it's added: `import QRCode from 'react-native-qrcode-svg'`.
+// Personal QR — payload is "regrowth:<qr_token>" so scanners can reject
+// arbitrary third-party codes before hitting the server.
 export function QrModal({
   token,
   name,
@@ -27,10 +28,12 @@ export function QrModal({
         {subtitle && <T variant="small" className="mt-1 text-center">{subtitle}</T>}
 
         <View className="bg-cloud rounded-card p-6 mt-6">
-          {/* TODO: render <QRCode value={token} size={220} /> once dep is added */}
-          <View className="w-56 h-56 bg-midnight items-center justify-center">
-            <T variant="caption" className="text-cloud">QR · {token.slice(0, 8)}…</T>
-          </View>
+          <QRCode
+            value={`regrowth:${token}`}
+            size={220}
+            color="#04072F"
+            backgroundColor="#DCD9D0"
+          />
         </View>
         <T variant="small" className="mt-6 text-center text-cloud/70 px-6">
           Have someone scan this to swap details. We'll handle the rest.

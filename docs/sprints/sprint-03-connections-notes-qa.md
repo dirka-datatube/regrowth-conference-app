@@ -7,6 +7,12 @@ ask questions (moderated Q&A with realtime upvotes).
 **Duration:** ~2 weeks · **Requires:** Sprints 1–2 done
 **Spec DoD covered:** §10.3 (speakers/LinkedIn/follow), §10.4 (QR connect), §10.5 (notes + AI summary)
 
+
+> **Progress 2026-07-17:** Executed in the autonomous sprint run — see
+> [`docs/reports/2026-07-17-sprint-execution.md`](../reports/2026-07-17-sprint-execution.md)
+> for what shipped, verification evidence, and the remaining device/human-bound
+> items for this sprint.
+
 ---
 
 ## Context for the agent

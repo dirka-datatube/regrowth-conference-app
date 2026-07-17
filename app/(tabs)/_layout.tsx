@@ -3,12 +3,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { useAttendee } from '@/lib/hooks/useAttendee';
+import { useRealtimeInvalidation } from '@/lib/hooks/useRealtimeInvalidation';
 import { registerForPush } from '@/lib/push';
 import { IS_DEMO } from '@/lib/demo';
 
 export default function TabsLayout() {
   const session = useAppStore((s) => s.session);
   const { data: attendee } = useAttendee();
+  useRealtimeInvalidation();
 
   useEffect(() => {
     if (IS_DEMO) return;

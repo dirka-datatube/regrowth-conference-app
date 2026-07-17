@@ -68,7 +68,7 @@ export default function Attendees() {
       </View>
 
       <View className="mt-4 gap-y-2">
-        {data?.map((a) => (
+        {data?.map((a: any) => (
           <Card key={a.id} onPress={() => router.push(`/attendees/${a.id}`)}>
             <View className="flex-row items-center">
               {a.photo_url ? (

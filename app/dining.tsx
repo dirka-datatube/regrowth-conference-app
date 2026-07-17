@@ -50,7 +50,7 @@ export default function Dining() {
       )}
 
       <View className="mt-6 gap-y-3">
-        {meals?.map((m) => (
+        {meals?.map((m: any) => (
           <Card key={m.id}>
             <T variant="caption" className="normal-case tracking-normal text-earth">
               {new Date(m.start_at).toLocaleString()}

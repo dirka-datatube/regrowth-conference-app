@@ -1,17 +1,20 @@
 import '../global.css';
 import { useEffect, useState } from 'react';
-import { Slot, SplashScreen } from 'expo-router';
+import { Slot, SplashScreen, router } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { View } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { queryClient, queryPersister } from '@/lib/queryClient';
 import { IS_DEMO, demoAttendee } from '@/lib/demo';
+import { initSentry } from '@/lib/sentry';
 
 SplashScreen.preventAutoHideAsync();
+initSentry();
 
 export default function RootLayout() {
   const setSession = useAppStore((s) => s.setSession);
@@ -37,6 +40,17 @@ export default function RootLayout() {
     });
     return () => data.subscription.unsubscribe();
   }, [setSession, setAttendee]);
+
+  // Push deep links: notifications carry data.route (e.g. "/session/<id>").
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const route = response.notification.request.content.data?.route;
+      if (typeof route === 'string' && route.startsWith('/')) {
+        router.push(route as any);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   if (!ready) return <View className="flex-1 bg-midnight" />;
 

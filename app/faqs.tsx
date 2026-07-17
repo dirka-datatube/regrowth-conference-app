@@ -39,7 +39,7 @@ export default function Faqs() {
       <T variant="h1" className="mt-2">Good to know</T>
 
       <View className="mt-6">
-        {data?.map((f) => {
+        {data?.map((f: any) => {
           const isOpen = open === f.id;
           return (
             <Pressable

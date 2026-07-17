@@ -24,14 +24,16 @@ export default function Profile() {
   const [name, setName] = useState(me?.name ?? '');
   const [bio, setBio] = useState(me?.bio ?? '');
   const [interests, setInterests] = useState((me?.interests ?? []).join(', '));
-  const [prefs, setPrefs] = useState(me?.notification_prefs ?? {});
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(
+    (me?.notification_prefs as Record<string, boolean>) ?? {},
+  );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setName(me?.name ?? '');
     setBio(me?.bio ?? '');
     setInterests((me?.interests ?? []).join(', '));
-    setPrefs(me?.notification_prefs ?? {});
+    setPrefs((me?.notification_prefs as Record<string, boolean>) ?? {});
   }, [me]);
 
   async function save() {

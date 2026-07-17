@@ -40,7 +40,7 @@ export default function Podcast() {
       </T>
 
       <View className="mt-6 gap-y-3">
-        {data?.map((ep) => (
+        {data?.map((ep: any) => (
           <Card key={ep.id} onPress={() => ep.episode_url && Linking.openURL(ep.episode_url)}>
             <T variant="caption" className="normal-case tracking-normal text-earth">
               {new Date(ep.published_at).toLocaleDateString()}

@@ -16,7 +16,7 @@ export default function Agenda() {
   const grouped = useMemo(() => {
     if (!sessions) return [] as { day: string; items: typeof sessions }[];
     const filtered = filter === 'mine' && myPicks
-      ? sessions.filter((s) => myPicks.has(s.id))
+      ? sessions.filter((s: any) => myPicks.has(s.id))
       : sessions;
     const byDay = new Map<string, typeof sessions>();
     for (const s of filtered) {
@@ -58,7 +58,7 @@ export default function Agenda() {
           <View key={day}>
             <T variant="sub">{day}</T>
             <View className="mt-3 gap-y-2">
-              {items.map((s) => (
+              {items.map((s: any) => (
                 <Card key={s.id} onPress={() => router.push(`/session/${s.id}`)}>
                   <T variant="caption" className="normal-case tracking-normal text-earth">
                     {formatTime(s.start_at)} – {formatTime(s.end_at)}{s.room ? ` · ${s.room}` : ''}

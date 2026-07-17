@@ -36,8 +36,9 @@ export default function BusinessCard() {
     if (!image || !me) return;
     setLoading(true);
     try {
+      // Identity comes from the JWT server-side; body carries only the image.
       const { data, error } = await supabase.functions.invoke('business-card-ocr', {
-        body: { initiator_id: me.id, image_base64: image.base64, mime_type: image.mime },
+        body: { image_base64: image.base64, mime_type: image.mime },
       });
       if (error) throw error;
       setExtracted(data?.extracted ?? null);

@@ -7,6 +7,12 @@ in from ActiveCampaign automatically.
 **Duration:** ~2 weeks · **Requires:** Sprint 1 done
 **Spec DoD covered:** §10.2 (personalised home), §10.7 (admin publish → phone < 30 s)
 
+
+> **Progress 2026-07-17:** Executed in the autonomous sprint run — see
+> [`docs/reports/2026-07-17-sprint-execution.md`](../reports/2026-07-17-sprint-execution.md)
+> for what shipped, verification evidence, and the remaining device/human-bound
+> items for this sprint.
+
 ---
 
 ## Context for the agent

@@ -37,7 +37,7 @@ export default function Gallery() {
       <T variant="h1" className="mt-2">Moments</T>
 
       <View className="flex-row flex-wrap mt-6 -mx-1">
-        {data?.map((g) => (
+        {data?.map((g: any) => (
           <View key={g.id} className="w-1/3 p-1">
             <Image source={{ uri: g.url }} className="w-full aspect-square rounded-card bg-snow/5" />
           </View>

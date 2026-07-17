@@ -10,6 +10,9 @@ import { useAppStore } from '@/lib/store';
 import { useHappeningNow, useUpNext } from '@/lib/hooks/useSessions';
 import { useSuggestions } from '@/lib/hooks/useSuggestions';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { IS_DEMO } from '@/lib/demo';
+import { Alert } from 'react-native';
 
 export default function Home() {
   const attendee = useAppStore((s) => s.attendee);
@@ -18,11 +21,36 @@ export default function Home() {
   const suggestions = useSuggestions();
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
 
   async function refresh() {
     setRefreshing(true);
     await qc.invalidateQueries();
     setRefreshing(false);
+  }
+
+  async function checkIn() {
+    if (IS_DEMO) {
+      Alert.alert("You're here", 'Welcome to REGROWTH 2026. (Demo mode)');
+      return;
+    }
+    setCheckingIn(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-in', {
+        body: { source: 'self' },
+      });
+      if (error) throw error;
+      Alert.alert(
+        data?.already ? 'Already checked in' : "You're here",
+        data?.already
+          ? "We've got you marked in for today. Enjoy it."
+          : "Welcome to REGROWTH 2026 — we're glad you made it.",
+      );
+    } catch (e: any) {
+      Alert.alert('Hmm', e?.message ?? 'Try again in a moment.');
+    } finally {
+      setCheckingIn(false);
+    }
   }
 
   const firstName = (attendee?.name ?? '').split(' ')[0] || 'there';
@@ -48,12 +76,12 @@ export default function Home() {
       <View className="mt-8">
         <T variant="sub">Happening now</T>
         {happening.data && happening.data.length > 0 ? (
-          happening.data.map((s) => (
+          happening.data.map((s: any) => (
             <Card key={s.id} className="mt-3" onPress={() => router.push(`/session/${s.id}`)}>
               <T variant="h3">{s.title}</T>
               {s.room && <T variant="small" className="mt-1">{s.room}</T>}
               <View className="mt-4">
-                <Button label="I'm here" variant="primary" fullWidth={false} onPress={() => {/* check-in */}} />
+                <Button label="I'm here" variant="primary" fullWidth={false} loading={checkingIn} onPress={checkIn} />
               </View>
             </Card>
           ))
@@ -70,7 +98,7 @@ export default function Home() {
       <View className="mt-8">
         <T variant="sub">Up next in 30 minutes</T>
         {upNext.data && upNext.data.length > 0 ? (
-          upNext.data.map((s) => (
+          upNext.data.map((s: any) => (
             <Card key={s.id} variant="earth" className="mt-3" onPress={() => router.push(`/session/${s.id}`)}>
               <T variant="h3">{s.title}</T>
               {s.room && <T variant="small" className="mt-1">{s.room}</T>}
@@ -145,6 +173,13 @@ export default function Home() {
       <View className="mt-8">
         <T variant="sub">Quick access</T>
         <View className="flex-row flex-wrap gap-3 mt-3">
+          <Pressable
+            onPress={checkIn}
+            className="bg-earth rounded-card px-4 py-3 flex-row items-center"
+          >
+            <Ionicons name="location" size={18} color="#FFFFFF" />
+            <T variant="small" className="ml-2 text-snow">I'm here — check in</T>
+          </Pressable>
           {[
             { label: 'Auction', href: '/auction', icon: 'trophy-outline' },
             { label: 'Dining', href: '/dining', icon: 'restaurant-outline' },

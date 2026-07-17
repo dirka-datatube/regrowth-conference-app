@@ -7,6 +7,12 @@ so the team can operate it without engineering on speed-dial.
 **Duration:** ~2 weeks · **Requires:** Sprints 1–4 done
 **Spec DoD covered:** full §10 checklist re-verified end-to-end
 
+
+> **Progress 2026-07-17:** Executed in the autonomous sprint run — see
+> [`docs/reports/2026-07-17-sprint-execution.md`](../reports/2026-07-17-sprint-execution.md)
+> for what shipped, verification evidence, and the remaining device/human-bound
+> items for this sprint.
+
 ---
 
 ## Context for the agent

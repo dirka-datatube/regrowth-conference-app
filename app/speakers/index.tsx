@@ -38,7 +38,7 @@ export default function Speakers() {
       <T variant="h1" className="mt-2">The voices of REGROWTH®</T>
 
       <View className="mt-6 flex-row flex-wrap -mx-1">
-        {data?.map((sp) => (
+        {data?.map((sp: any) => (
           <Pressable
             key={sp.id}
             onPress={() => router.push(`/speakers/${sp.id}`)}

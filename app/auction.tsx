@@ -13,7 +13,6 @@ import { IS_DEMO, demoAuction } from '@/lib/demo';
 
 export default function Auction() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
-  const meId = useAppStore((s) => s.attendee?.id);
   const qc = useQueryClient();
   const [bids, setBids] = useState<Record<string, string>>({});
 
@@ -49,16 +48,26 @@ export default function Auction() {
 
   const placeBid = useMutation({
     mutationFn: async ({ itemId, amount }: { itemId: string; amount: number }) => {
-      if (!meId) return;
-      const { error } = await supabase.from('bids').insert({
-        item_id: itemId,
-        attendee_id: meId,
-        amount,
+      // Atomic server-side validation: row lock, min increment, open check,
+      // outbid notification. Direct inserts on bids are revoked.
+      const { error } = await supabase.rpc('place_bid', {
+        p_item_id: itemId,
+        p_amount: amount,
       });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['auction', eventId] }),
-    onError: (e: any) => Alert.alert("That didn't go through", e?.message ?? 'Try again.'),
+    onError: (e: any) => {
+      const msg = String(e?.message ?? '');
+      if (msg.includes('BID_TOO_LOW')) {
+        Alert.alert('Bid a little higher', 'Someone got in just before you — refresh and try again.');
+      } else if (msg.includes('AUCTION_CLOSED')) {
+        Alert.alert('This one has closed', 'Bidding has ended for this item.');
+      } else {
+        Alert.alert("That didn't go through", msg || 'Try again.');
+      }
+      qc.invalidateQueries({ queryKey: ['auction', eventId] });
+    },
   });
 
   function confirmBid(itemId: string, current: number, starting: number) {
@@ -89,7 +98,7 @@ export default function Auction() {
       </T>
 
       <View className="mt-6 gap-y-4">
-        {items?.map((item) => (
+        {items?.map((item: any) => (
           <Card key={item.id}>
             {item.photo_url && (
               <Image source={{ uri: item.photo_url }} className="w-full h-40 rounded-card mb-3" />

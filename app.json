@@ -57,7 +57,7 @@
           "locationWhenInUsePermission": "REGROWTH uses your location to check you into the venue."
         }
       ],
-      "sentry-expo"
+      "@sentry/react-native/expo"
     ],
     "experiments": {
       "typedRoutes": true

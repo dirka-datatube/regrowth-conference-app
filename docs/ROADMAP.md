@@ -1,8 +1,12 @@
 # REGROWTH® Conference App — Production Roadmap
 
-**Status date:** 2026-07-16
-**Repo:** `dirka-datatube/regrowth-conference-app`, branch `claude/regrowth-conference-app-4EqIq`
+**Status date:** 2026-07-17
+**Repo:** `dirka-datatube/regrowth-conference-app`
+**Backend:** Supabase project **"ReGrowth App"** (`blcfeguqhnggyxvexggy`, ap-northeast-1) — **live: schema + RLS applied, 9 edge functions deployed, seed data loaded**
 **Audience:** Dirk (DataTube), Kylie's team (REGROWTH), and any AI agent picking up a sprint.
+
+**Decisions log:**
+- 2026-07-17 — Brand font licensing **deferred**; shipping iOS built-in fallbacks (Georgia / Snell Roundhand / Helvetica Neue), mapped in `tailwind.config.js`.
 
 ---
 
@@ -21,15 +25,17 @@
 
 ### Not yet real (the honest list)
 
-**Nothing has run against a live Supabase project.** The scaffold is code-complete
-but unverified end-to-end. Specific known defects and gaps, in priority order:
+The backend is now provisioned (2026-07-17): all four migrations applied to
+the live project, seed data loaded (including test attendees — Dirk's email
+can log in), all 9 edge functions deployed, and the security-advisor WARNs
+remediated in `20260101000300_security_hardening.sql`. Remaining defects and
+gaps, in priority order:
 
-1. **🔴 Login is broken by design right now.** `lib/auth.ts` sends magic links with
-   `shouldCreateUser: false`, but no `auth.users` rows exist — so every login
-   fails. Even if it succeeded, nothing ever populates `attendees.user_id`, so
-   RLS (`current_attendee_id()`) would return null and the app would render
-   empty. Fix: DB trigger linking `auth.users` → `attendees` by email +
-   a decision on the signup strategy. **Sprint 1, task 1.**
+1. ~~🔴 Login broken (auth→attendee linking)~~ **FIXED 2026-07-17** —
+   `handle_new_auth_user` trigger (migration `20260101000200`) links
+   `auth.users` → `attendees`/`admin_users` by email and rejects unknown
+   emails; client updated (`shouldCreateUser: true` + friendly rejection
+   copy). **Not yet verified on a device** — Sprint 1 task 5.
 2. **🔴 No scheduled jobs.** AC sync "every 15 mins", daily suggestions,
    post-session summaries, and session-starting pushes all need pg_cron (or an
    external scheduler). None is wired. **Sprints 2 & 4.**
@@ -38,17 +44,16 @@ but unverified end-to-end. Specific known defects and gaps, in priority order:
    notification. Race conditions guaranteed. Needs an RPC + trigger. **Sprint 4.**
 4. **🟠 QR code rendering is a placeholder.** `components/QrModal.tsx` renders a
    stub box; `react-native-qrcode-svg` needs adding. **Sprint 3.**
-5. **🟠 Brand fonts missing** (licensed files). App falls back to system fonts;
-   `useBrandFonts()` will fail at build until files land or the call is guarded.
-   **Sprint 1.**
+5. ~~🟠 Brand fonts missing~~ **RESOLVED by decision 2026-07-17** — licensing
+   deferred; iOS built-in fallbacks mapped in `tailwind.config.js`, restore
+   steps documented in `lib/fonts.ts`.
 6. **🟡 Package drift:** `expo-image-picker` needs ~15.1.0; `sentry-expo` is
    deprecated → replace with `@sentry/react-native`. (Seen as warnings on first
    local run.) **Sprint 1.**
 7. **🟡 Hand-written DB types** (`types/database.ts`) — replace with generated
-   types once a project is linked. **Sprint 1.**
-8. **🟡 Storage RLS policies call `current_attendee_id()` unqualified** — inside
-   the `storage` schema this may not resolve; should be
-   `public.current_attendee_id()`. **Sprint 1 migration fix.**
+   types now that the project is live. **Sprint 1.**
+8. ~~🟡 Storage RLS policies unqualified function call~~ **FIXED 2026-07-17** —
+   `public.current_attendee_id()` qualified in the storage migration as applied.
 9. **🟡 No tests, no CI, no EAS config.** **Sprint 1.**
 10. **🟡 Demo mode ships in the bundle** — must be excluded or hard-guarded in
     production builds. **Sprint 5 (checked in Sprint 1 CI).**
@@ -56,6 +61,22 @@ but unverified end-to-end. Specific known defects and gaps, in priority order:
     Fine for hundreds of attendees; optimise before scaling. **Sprint 4.**
 12. **⬜ Admin panel does not exist.** It's a separate Lovable/Next.js project
     against the same Supabase instance. **Sprint 2 is where it must land.**
+13. **🟡 Edge functions trust caller-supplied IDs** (`qr-connect`,
+    `business-card-ocr`, `check-in`, `ac-event-emit` take attendee ids from the
+    request body). The API gateway requires a valid JWT (verify_jwt), so only
+    signed-in attendees can call them — but impersonation between attendees is
+    possible until identities are derived from the JWT. **Sprint 3 fix.**
+14. **🟡 Advisor WARN accepted for now:** `citext` extension installed in the
+    `public` schema (moving it is disruptive mid-build). Revisit in Sprint 5.
+
+### Live backend facts (for agents)
+
+- Project ref: `blcfeguqhnggyxvexggy` · URL: `https://blcfeguqhnggyxvexggy.supabase.co`
+- Event id: `00000000-0000-0000-0000-000000000001` (REGROWTH Annual Conference 2026)
+- Migrations applied: `initial_schema`, `storage_buckets`, `auth_user_linking`, `security_hardening`
+- Edge functions deployed (v1): all 9; `website-signup` has `verify_jwt=false` (uses `x-webhook-secret`)
+- Function secrets still unset: `ANTHROPIC_API_KEY`, `ACTIVECAMPAIGN_*`, `WEBSITE_WEBHOOK_SECRET`, `EXPO_ACCESS_TOKEN` — Claude/AC/push features will error cleanly until set
+- Seeded test attendees: `dirk@datatube.app` (can log in), plus 3 `*@regrowth.example` fixtures
 
 ### External dependencies (not code — chase these in parallel)
 

@@ -33,7 +33,7 @@ create policy "attendee upload own headshot"
   on storage.objects for insert
   with check (
     bucket_id = 'headshots'
-    and (storage.foldername(name))[1] = current_attendee_id()::text
+    and (storage.foldername(name))[1] = public.current_attendee_id()::text
   );
 
 -- Attendees can upload to gallery + business-cards (private).
@@ -48,12 +48,12 @@ create policy "attendee upload business cards"
   on storage.objects for insert
   with check (
     bucket_id = 'business-cards'
-    and (storage.foldername(name))[1] = current_attendee_id()::text
+    and (storage.foldername(name))[1] = public.current_attendee_id()::text
   );
 
 create policy "attendee read own business cards"
   on storage.objects for select
   using (
     bucket_id = 'business-cards'
-    and (storage.foldername(name))[1] = current_attendee_id()::text
+    and (storage.foldername(name))[1] = public.current_attendee_id()::text
   );

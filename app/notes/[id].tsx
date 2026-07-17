@@ -1,4 +1,4 @@
-import { View, Pressable, Share } from 'react-native';
+import { View, Pressable, Share, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -81,7 +81,24 @@ export default function NoteDetail() {
         </View>
       )}
 
-      <View className="mt-8">
+      <View className="mt-8 gap-y-3">
+        <Button
+          label="Email me these notes"
+          variant="secondary"
+          onPress={async () => {
+            const { data: res, error } = await supabase.functions.invoke('ac-event-emit', {
+              body: {
+                event_name: 'notes_export',
+                event_data: { session: session?.title, body: data.body, summary: data.ai_summary },
+              },
+            });
+            if (error || res?.error) {
+              Alert.alert('Hmm', 'We could not send that just now — try the share button instead.');
+            } else {
+              Alert.alert('On its way', 'Your notes will land in your inbox shortly.');
+            }
+          }}
+        />
         <Button
           label="Edit notes"
           variant="ghost"

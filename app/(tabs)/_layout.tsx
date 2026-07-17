@@ -54,7 +54,20 @@ export default function TabsLayout() {
     }
   }, [attendee?.id, attendee?.event_id, qc]);
 
+  const onboardingSeen = useAppStore((s) => s.onboardingSeen);
+
   if (!session && !IS_DEMO) return <Redirect href="/(auth)/welcome" />;
+
+  // First run: a 60-second onboarding when we know nothing about them yet.
+  if (
+    !IS_DEMO &&
+    attendee &&
+    !onboardingSeen &&
+    !attendee.photo_url &&
+    (attendee.interests?.length ?? 0) === 0
+  ) {
+    return <Redirect href={"/onboarding" as any} />;
+  }
 
   return (
     <Tabs

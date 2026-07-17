@@ -117,6 +117,26 @@ export default function Home() {
         </T>
       </Pressable>
 
+
+      {/* Profile completeness nudge */}
+      {attendee && (!attendee.photo_url || (attendee.interests?.length ?? 0) < 3) && (
+        <Pressable
+          onPress={() => router.push('/onboarding' as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Complete your profile"
+          className="mt-5 bg-surface border border-line rounded-card p-4 flex-row items-center active:bg-surface-alt"
+        >
+          <Ionicons name="sparkles-outline" size={20} color="#B85F3D" />
+          <View className="ml-3 flex-1">
+            <T variant="body" className="text-ink">Finish setting up your week</T>
+            <T variant="small" className="text-ink-faint">
+              A photo and a few interests unlock better introductions.
+            </T>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#8B8EA6" />
+        </Pressable>
+      )}
+
       {loading && (
         <View className="mt-8">
           <CardSkeleton />

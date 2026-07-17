@@ -1,9 +1,11 @@
-// Dispatcher for cron-driven jobs (see migration 20260101000700):
+// Dispatcher for cron-driven jobs (see migrations 20260101000700/000800):
 //   process_queue      — deliver due notifications, highest priority first
 //   session_starting   — queue T-15 reminders for picks + followed speakers
 //   note_summaries     — AI-summarise notes for recently ended sessions
 //   daily_suggestions  — batch-generate people/partner suggestions
 //   people_to_meet     — queue one daily suggested-person nudge
+//   dont_miss          — concurrent sessions ~30 min out, no pick yet
+//   podcast_sync       — mirror the Impact & Influence RSS feed
 //
 // Callers: pg_cron (anon bearer) or internal service calls. End-user JWTs
 // (role "authenticated") are rejected — job effects are global, not per-user.
@@ -210,6 +212,99 @@ async function peopleToMeet(supabase: ReturnType<typeof adminClient>) {
   return { queued };
 }
 
+async function dontMiss(supabase: ReturnType<typeof adminClient>) {
+  const from = new Date(Date.now() + 25 * 60 * 1000).toISOString();
+  const to = new Date(Date.now() + 35 * 60 * 1000).toISOString();
+
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('id, event_id, title, start_at')
+    .eq('is_published', true)
+    .gte('start_at', from)
+    .lte('start_at', to);
+  if (!sessions || sessions.length < 2) return { concurrent: sessions?.length ?? 0, queued: 0 };
+
+  const windowKey = sessions.map((s) => s.id).sort().join(',').slice(0, 64);
+  const { data: existing } = await supabase
+    .from('notifications')
+    .select('id')
+    .eq('type', 'dont_miss')
+    .eq('data->>window', windowKey)
+    .maybeSingle();
+  if (existing) return { concurrent: sessions.length, queued: 0 };
+
+  const sessionIds = sessions.map((s) => s.id);
+  const { data: picks } = await supabase
+    .from('schedule_picks')
+    .select('attendee_id')
+    .in('session_id', sessionIds);
+  const pickedIds = new Set((picks ?? []).map((p) => p.attendee_id));
+
+  const { data: attendees } = await supabase
+    .from('attendees')
+    .select('id')
+    .eq('event_id', sessions[0].event_id)
+    .not('push_token', 'is', null)
+    .limit(500);
+  const recipients = (attendees ?? []).map((a) => a.id).filter((id) => !pickedIds.has(id));
+  if (!recipients.length) return { concurrent: sessions.length, queued: 0 };
+
+  await supabase.from('notifications').insert({
+    event_id: sessions[0].event_id,
+    type: 'dont_miss',
+    title: "Don't miss this",
+    body: `${sessions.length} sessions start in ~30 minutes — pick the one for you.`,
+    data: { route: '/agenda', window: windowKey },
+    target_segment: { attendee_ids: recipients },
+    scheduled_at: new Date().toISOString(),
+  });
+  return { concurrent: sessions.length, queued: 1, recipients: recipients.length };
+}
+
+async function podcastSync(supabase: ReturnType<typeof adminClient>) {
+  const feedUrl = Deno.env.get('PODCAST_RSS_URL');
+  if (!feedUrl) return { skipped: 'PODCAST_RSS_URL not set' };
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .order('start_date', { ascending: false })
+    .limit(1)
+    .single();
+  if (!event) return { skipped: 'no event' };
+
+  const res = await fetch(feedUrl);
+  if (!res.ok) throw new Error(`RSS fetch failed: ${res.status}`);
+  const xml = await res.text();
+
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 20);
+  const pick = (block: string, tag: string) => {
+    const m = block.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`));
+    return m?.[1]?.trim() ?? null;
+  };
+
+  let upserted = 0;
+  for (const [, block] of items) {
+    const title = pick(block, 'title');
+    const audio = block.match(/<enclosure[^>]*url="([^"]+)"/)?.[1] ?? null;
+    if (!title || !audio) continue;
+    const pub = pick(block, 'pubDate');
+    const { error } = await supabase.from('podcast_episodes').upsert(
+      {
+        event_id: event.id,
+        title,
+        description: pick(block, 'description')?.replace(/<[^>]+>/g, '').slice(0, 500) ?? null,
+        audio_url: audio,
+        episode_url: pick(block, 'link'),
+        published_at: pub ? new Date(pub).toISOString() : new Date().toISOString(),
+      },
+      { onConflict: 'audio_url', ignoreDuplicates: false } as any,
+    );
+    if (!error) upserted++;
+  }
+  return { items: items.length, upserted };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -244,6 +339,12 @@ Deno.serve(async (req) => {
         break;
       case 'people_to_meet':
         detail = await peopleToMeet(supabase);
+        break;
+      case 'dont_miss':
+        detail = await dontMiss(supabase);
+        break;
+      case 'podcast_sync':
+        detail = await podcastSync(supabase);
         break;
       default:
         throw new Error(`Unknown job: ${job}`);

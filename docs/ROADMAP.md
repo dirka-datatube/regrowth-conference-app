@@ -102,15 +102,17 @@ one's Definition of Done is a prerequisite for the next.
 | 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | ✅ done (APNs → Sprint 10) |
 | 5 | [Hardening & launch prep](sprints/sprint-05-hardening-and-testflight.md) | ◐ automatable portion done; remainder redistributed into Sprints 9–10 |
 
-### Phase two (next five)
+### Phase two (executed 2026-07-17 — see [the phase-two report](reports/2026-07-17-phase-two-execution.md))
 
-| # | Sprint | Outcome when done |
+| # | Sprint | Status |
 | --- | --- | --- |
-| 6 | [**Brand UI/UX overhaul**](sprints/sprint-06-brand-ui-overhaul.md) *(the big one, ~3 wks)* | The app looks and feels like REGROWTH — light, clean, photography-forward, simple navigation (4 tabs, two-tap rule); every screen designed, Kylie sign-off on a screenshot gallery |
-| 7 | [Speed & frictionless entry](sprints/sprint-07-speed-and-frictionless-entry.md) | Hard performance budgets met (<2 s cold start); OTP login fallback; one-tap geofence check-in; venue QR posters |
-| 8 | [Onboarding & personalisation v2](sprints/sprint-08-onboarding-and-personalisation.md) | 60-second onboarding, interest chips feeding better matching, Home day-timeline, gallery uploads, podcast mirror, "don't miss this" |
-| 9 | [Content, integrations & comms go-live](sprints/sprint-09-content-integrations-golive.md) | Real AC data + automations, custom SMTP, admin on Vercel + team trained, real content loaded, brief's open questions decided |
-| 10 | [TestFlight, UAT & event readiness](sprints/sprint-10-testflight-uat-event-readiness.md) | Full §10 verified on hardware, scale + RLS tests in CI, two UAT cycles, go/no-go review |
+| 6 | [**Brand UI/UX overhaul**](sprints/sprint-06-brand-ui-overhaul.md) | ✅ done — light-first system, 4-tab nav, Home v2 (PDF ratification + screenshot gallery pending) |
+| 7 | [Speed & frictionless entry](sprints/sprint-07-speed-and-frictionless-entry.md) | ✅ done — expo-image/FlashList/prefetch/optimistic, OTP fallback, geofence check-in, QR posters (device budgets need hardware) |
+| 8 | [Onboarding & personalisation v2](sprints/sprint-08-onboarding-and-personalisation.md) | ✅ done — onboarding, chips, don't-miss + podcast jobs live, gallery uploads |
+| 9 | [Content & integrations go-live](sprints/sprint-09-content-integrations-golive.md) | ◐ automatable done — creds/SMTP/Vercel/content are human-gated |
+| 10 | [TestFlight, UAT & readiness](sprints/sprint-10-testflight-uat-event-readiness.md) | ◐ tests + RLS suite (caught & fixed a real policy bug) + privacy manifest done — Apple chain + UAT human-gated |
+
+**Next actions live in [`docs/launch-checklist.md`](launch-checklist.md).**
 
 **Brand direction note (Sprint 6 input):** REGROWTH's real collateral
 (email screenshots, 2026-07-17) is **light-first** — Snow/Cloud surfaces,

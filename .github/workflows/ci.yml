@@ -34,6 +34,18 @@ jobs:
           fi
           echo "demo-mode guard passed"
 
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Unit tests (push eligibility, priority)
+        run: deno test --no-check=remote supabase/functions/tests/
+
   admin:
     runs-on: ubuntu-latest
     steps:

@@ -4,6 +4,7 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
 import { adminClient } from '../_shared/supabase.ts';
+import { eligibleRecipients } from '../_shared/eligibility.ts';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 const EXPO_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN');
@@ -17,7 +18,6 @@ type ExpoMessage = {
 };
 
 const BATCH = 100;
-const DAILY_CAP = 4;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -64,12 +64,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const eligible = (attendees ?? []).filter((a) => {
-      if (isAdminAnnouncement) return true;
-      const prefs = a.notification_prefs ?? {};
-      if (prefs[notification.type] === false) return false;
-      return (counts.get(a.id) ?? 0) < DAILY_CAP;
-    });
+    const eligible = eligibleRecipients(attendees ?? [], notification.type, counts);
 
     const messages: ExpoMessage[] = eligible.map((a) => ({
       to: a.push_token!,

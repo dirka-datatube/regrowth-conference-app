@@ -6,6 +6,12 @@ sprint kills "slow" measurably.
 
 **Duration:** ~2 weeks · **Requires:** Sprint 6 (measure the real UI, not the scaffold)
 
+
+> **Progress 2026-07-17:** Executed in the phase-two autonomous run — see
+> [`docs/reports/2026-07-17-phase-two-execution.md`](../reports/2026-07-17-phase-two-execution.md)
+> and [`docs/launch-checklist.md`](../launch-checklist.md) for what shipped
+> and the remaining human-gated items.
+
 ---
 
 ## Performance budgets (the contract for this sprint)

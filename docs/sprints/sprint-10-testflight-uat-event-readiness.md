@@ -6,6 +6,12 @@ on hardware. Ends with a go/no-go review before the event.
 
 **Duration:** ~2 weeks + event-week support · **Requires:** Sprints 6–9
 
+
+> **Progress 2026-07-17:** Executed in the phase-two autonomous run — see
+> [`docs/reports/2026-07-17-phase-two-execution.md`](../reports/2026-07-17-phase-two-execution.md)
+> and [`docs/launch-checklist.md`](../launch-checklist.md) for what shipped
+> and the remaining human-gated items.
+
 ---
 
 ## Tasks

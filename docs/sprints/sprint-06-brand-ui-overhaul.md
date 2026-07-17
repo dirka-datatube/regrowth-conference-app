@@ -8,6 +8,12 @@ sprint of phase two: every screen gets designed, not just themed.
 **Requires:** Sprints 1–5 execution run (done 2026-07-17)
 **Blocked by (human):** brand guidelines PDF loaded into the repo (`docs/brand/`)
 
+
+> **Progress 2026-07-17:** Executed in the phase-two autonomous run — see
+> [`docs/reports/2026-07-17-phase-two-execution.md`](../reports/2026-07-17-phase-two-execution.md)
+> and [`docs/launch-checklist.md`](../launch-checklist.md) for what shipped
+> and the remaining human-gated items.
+
 ---
 
 ## Context for the agent

@@ -67,7 +67,7 @@ export default function Profile() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">My profile</T>
       </View>
@@ -85,7 +85,7 @@ export default function Profile() {
           {CATEGORIES.map((c, idx) => (
             <View
               key={c.key}
-              className={`flex-row items-start py-3 ${idx > 0 ? 'border-t border-snow/10' : ''}`}
+              className={`flex-row items-start py-3 ${idx > 0 ? 'border-t border-line' : ''}`}
             >
               <View className="flex-1 pr-4">
                 <T variant="body">{c.label}</T>
@@ -100,7 +100,7 @@ export default function Profile() {
             </View>
           ))}
         </Card>
-        <T variant="caption" className="mt-3 normal-case tracking-normal text-cloud/70">
+        <T variant="caption" className="mt-3 normal-case tracking-normal text-ink-faint">
           Admin announcements always come through — they're how we tell you about
           surprises and room changes.
         </T>
@@ -131,8 +131,8 @@ function Field({
         value={value}
         onChangeText={onChange}
         multiline={multiline}
-        placeholderTextColor="#8A8DA6"
-        className={`bg-snow/5 border border-snow/15 rounded-card px-4 py-4 text-snow font-body text-body ${multiline ? 'min-h-24' : ''}`}
+        placeholderTextColor="#8B8EA6"
+        className={`bg-surface border border-line rounded-card px-4 py-4 text-ink font-body text-body ${multiline ? 'min-h-24' : ''}`}
         textAlignVertical={multiline ? 'top' : 'center'}
       />
     </View>

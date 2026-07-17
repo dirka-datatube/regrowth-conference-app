@@ -50,20 +50,20 @@ export default function Attendees() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Attendees</T>
       </View>
       <T variant="h1" className="mt-2">Who's here</T>
 
-      <View className="mt-4 bg-snow/5 border border-snow/15 rounded-pill px-4 py-3 flex-row items-center">
+      <View className="mt-4 bg-surface border border-line rounded-pill px-4 py-3 flex-row items-center">
         <Ionicons name="search" size={18} color="#8A8DA6" />
         <TextInput
           value={q}
           onChangeText={setQ}
           placeholder="Search by name, role, or company"
-          placeholderTextColor="#8A8DA6"
-          className="ml-3 flex-1 text-snow font-body text-body"
+          placeholderTextColor="#8B8EA6"
+          className="ml-3 flex-1 text-ink font-body text-body"
         />
       </View>
 
@@ -72,10 +72,10 @@ export default function Attendees() {
           <Card key={a.id} onPress={() => router.push(`/attendees/${a.id}`)}>
             <View className="flex-row items-center">
               {a.photo_url ? (
-                <Image source={{ uri: a.photo_url }} className="w-12 h-12 rounded-full bg-snow/10" />
+                <Image source={{ uri: a.photo_url }} className="w-12 h-12 rounded-full bg-surface-alt" />
               ) : (
-                <View className="w-12 h-12 rounded-full bg-snow/10 items-center justify-center">
-                  <Ionicons name="person" size={22} color="#DCD9D0" />
+                <View className="w-12 h-12 rounded-full bg-surface-alt items-center justify-center">
+                  <Ionicons name="person" size={22} color="#8B8EA6" />
                 </View>
               )}
               <View className="ml-3 flex-1">

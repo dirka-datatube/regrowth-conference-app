@@ -83,14 +83,14 @@ export default function NewNote() {
     <Screen>
       <View className="flex-row items-center justify-between pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption">
           {saveState === 'saved' ? 'Saved ✓' : saveState === 'saving' ? 'Saving…' : 'Reconnecting…'}
         </T>
       </View>
 
-      {sessionTitle && <T variant="caption" className="text-earth normal-case tracking-normal mt-4">{sessionTitle}</T>}
+      {sessionTitle && <T variant="caption" className="text-cta-deep normal-case tracking-normal mt-4">{sessionTitle}</T>}
       <T variant="h2" className="mt-2">Capture as you go</T>
 
       <View className="mt-4 flex-1">
@@ -99,8 +99,8 @@ export default function NewNote() {
           onChangeText={setBody}
           multiline
           placeholder="What's resonating? What will you act on?"
-          placeholderTextColor="#8A8DA6"
-          className="bg-snow/5 border border-snow/15 rounded-card px-4 py-4 text-snow font-body text-body min-h-64"
+          placeholderTextColor="#8B8EA6"
+          className="bg-surface border border-line rounded-card px-4 py-4 text-ink font-body text-body min-h-64"
           textAlignVertical="top"
           autoFocus
         />

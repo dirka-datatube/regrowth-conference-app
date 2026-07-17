@@ -30,7 +30,7 @@ export default function Gallery() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Gallery</T>
       </View>
@@ -39,7 +39,7 @@ export default function Gallery() {
       <View className="flex-row flex-wrap mt-6 -mx-1">
         {data?.map((g: any) => (
           <View key={g.id} className="w-1/3 p-1">
-            <Image source={{ uri: g.url }} className="w-full aspect-square rounded-card bg-snow/5" />
+            <Image source={{ uri: g.url }} className="w-full aspect-square rounded-card bg-surface" />
           </View>
         ))}
       </View>

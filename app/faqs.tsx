@@ -32,7 +32,7 @@ export default function Faqs() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">FAQs</T>
       </View>
@@ -45,7 +45,7 @@ export default function Faqs() {
             <Pressable
               key={f.id}
               onPress={() => setOpen(isOpen ? null : f.id)}
-              className="border-b border-snow/10 py-4"
+              className="border-b border-line py-4"
             >
               <View className="flex-row items-center justify-between">
                 <T variant="h3" className="flex-1 pr-4">{f.question}</T>
@@ -55,7 +55,7 @@ export default function Faqs() {
                   color="#D17F5D"
                 />
               </View>
-              {isOpen && <T variant="body" className="mt-3 text-cloud/80">{f.answer}</T>}
+              {isOpen && <T variant="body" className="mt-3 text-ink-soft">{f.answer}</T>}
             </Pressable>
           );
         })}

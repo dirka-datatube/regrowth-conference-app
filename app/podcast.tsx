@@ -30,30 +30,30 @@ export default function Podcast() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Podcast</T>
       </View>
       <T variant="h1" className="mt-2">Impact & Influence</T>
-      <T variant="body" className="mt-2 text-cloud/80">
+      <T variant="body" className="mt-2 text-ink-soft">
         Conversations with the people moving real estate forward.
       </T>
 
       <View className="mt-6 gap-y-3">
         {data?.map((ep: any) => (
           <Card key={ep.id} onPress={() => ep.episode_url && Linking.openURL(ep.episode_url)}>
-            <T variant="caption" className="normal-case tracking-normal text-earth">
+            <T variant="caption" className="normal-case tracking-normal text-cta-deep">
               {new Date(ep.published_at).toLocaleDateString()}
             </T>
             <T variant="h3" className="mt-1">{ep.title}</T>
             {ep.description && (
-              <T variant="body" className="mt-2 text-cloud/80" numberOfLines={3}>{ep.description}</T>
+              <T variant="body" className="mt-2 text-ink-soft" numberOfLines={3}>{ep.description}</T>
             )}
             <View className="flex-row mt-3 gap-3">
               {ep.audio_url && (
                 <Pressable
                   onPress={() => Linking.openURL(ep.audio_url)}
-                  className="bg-earth rounded-pill px-4 py-2 flex-row items-center"
+                  className="bg-cta rounded-pill px-4 py-2 flex-row items-center"
                 >
                   <Ionicons name="play" size={14} color="#FFFFFF" />
                   <T variant="small" className="ml-2 text-snow font-sub uppercase tracking-widest">

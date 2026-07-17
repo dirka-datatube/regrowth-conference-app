@@ -10,6 +10,7 @@ import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoAuction } from '@/lib/demo';
+import * as Haptics from 'expo-haptics';
 
 export default function Auction() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
@@ -56,7 +57,10 @@ export default function Auction() {
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['auction', eventId] }),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      qc.invalidateQueries({ queryKey: ['auction', eventId] });
+    },
     onError: (e: any) => {
       const msg = String(e?.message ?? '');
       if (msg.includes('BID_TOO_LOW')) {
@@ -88,12 +92,12 @@ export default function Auction() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Charity Auction</T>
       </View>
       <T variant="h1" className="mt-2">Bid for good</T>
-      <T variant="body" className="mt-2 text-cloud/80">
+      <T variant="body" className="mt-2 text-ink-soft">
         Every dollar goes to the cause we're supporting this year.
       </T>
 
@@ -104,12 +108,12 @@ export default function Auction() {
               <Image source={{ uri: item.photo_url }} className="w-full h-40 rounded-card mb-3" />
             )}
             <T variant="h3">{item.name}</T>
-            {item.description && <T variant="body" className="mt-1 text-cloud/80">{item.description}</T>}
+            {item.description && <T variant="body" className="mt-1 text-ink-soft">{item.description}</T>}
 
             <View className="flex-row mt-4 items-end">
               <View className="flex-1">
                 <T variant="caption">Current bid</T>
-                <T variant="h2" className="text-earth">
+                <T variant="h2" className="text-cta-deep">
                   ${(item.current_bid ?? item.starting_bid).toFixed(0)}
                 </T>
                 <T variant="caption" className="normal-case tracking-normal">
@@ -124,8 +128,8 @@ export default function Auction() {
                 onChangeText={(v) => setBids((b) => ({ ...b, [item.id]: v }))}
                 keyboardType="numeric"
                 placeholder={`$${(item.current_bid ?? item.starting_bid) + 1}`}
-                placeholderTextColor="#8A8DA6"
-                className="flex-1 bg-snow/5 border border-snow/15 rounded-pill px-4 py-3 text-snow font-body text-body"
+                placeholderTextColor="#8B8EA6"
+                className="flex-1 bg-surface border border-line rounded-pill px-4 py-3 text-ink font-body text-body"
               />
               <View>
                 <Button

@@ -18,14 +18,14 @@ export function QrModal({
 }) {
   return (
     <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <View className="flex-1 bg-midnight/95 items-center justify-center px-6">
+      <View className="flex-1 bg-moment/95 items-center justify-center px-6">
         <Pressable onPress={onClose} className="absolute top-16 right-6" hitSlop={10}>
           <Ionicons name="close" size={28} color="#FFFFFF" />
         </Pressable>
 
-        <T variant="caption">Your QR</T>
-        <T variant="h2" className="mt-2 text-center">{name}</T>
-        {subtitle && <T variant="small" className="mt-1 text-center">{subtitle}</T>}
+        <T variant="caption" className="text-moment-soft">Your QR</T>
+        <T variant="h2" className="mt-2 text-center text-moment-ink">{name}</T>
+        {subtitle && <T variant="small" className="mt-1 text-center text-moment-soft">{subtitle}</T>}
 
         <View className="bg-cloud rounded-card p-6 mt-6">
           <QRCode
@@ -35,7 +35,7 @@ export function QrModal({
             backgroundColor="#DCD9D0"
           />
         </View>
-        <T variant="small" className="mt-6 text-center text-cloud/70 px-6">
+        <T variant="small" className="mt-6 text-center text-moment-soft px-6">
           Have someone scan this to swap details. We'll handle the rest.
         </T>
       </View>

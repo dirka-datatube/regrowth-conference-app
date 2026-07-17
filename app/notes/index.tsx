@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Screen } from '@/components/Screen';
+import { Header } from '@/components/Header';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
@@ -29,10 +30,10 @@ export default function Notes() {
 
   return (
     <Screen>
-      <View className="pt-2">
-        <T variant="caption">Event notes</T>
+      <Header label="Event notes" />
+      <View>
         <T variant="h1" className="mt-2">Your thinking</T>
-        <T variant="body" className="mt-2 text-cloud/80">
+        <T variant="body" className="mt-2 text-ink-soft">
           Everything you've captured, plus the AI summary we'll build for each session.
         </T>
       </View>
@@ -41,14 +42,14 @@ export default function Notes() {
         {data?.length ? (
           data.map((n: any) => (
             <Card key={n.id} onPress={() => router.push(`/notes/${n.id}`)}>
-              <T variant="caption" className="normal-case tracking-normal text-earth">
+              <T variant="caption" className="normal-case tracking-normal text-cta-deep">
                 {n.session?.title ?? 'Untitled session'}
               </T>
-              <T variant="body" className="mt-2 text-snow" numberOfLines={3}>
+              <T variant="body" className="mt-2 text-ink" numberOfLines={3}>
                 {n.body || '(no notes yet)'}
               </T>
               {n.ai_summary && (
-                <T variant="small" className="mt-2 text-cloud/70" numberOfLines={2}>
+                <T variant="small" className="mt-2 text-ink-faint" numberOfLines={2}>
                   ✨ {n.ai_summary}
                 </T>
               )}

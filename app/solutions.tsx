@@ -44,7 +44,7 @@ export default function Solutions() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Solutions</T>
       </View>
@@ -55,9 +55,9 @@ export default function Solutions() {
           <Pressable
             key={f}
             onPress={() => setFilter(f)}
-            className={`rounded-pill px-3 py-1 ${filter === f ? 'bg-earth' : 'bg-snow/5 border border-snow/15'}`}
+            className={`rounded-pill px-3 py-1 ${filter === f ? 'bg-cta' : 'bg-surface border border-line'}`}
           >
-            <T variant="caption" className={`normal-case tracking-normal ${filter === f ? 'text-snow' : 'text-cloud'}`}>
+            <T variant="caption" className={`normal-case tracking-normal ${filter === f ? 'text-snow' : 'text-ink-soft'}`}>
               {f}
             </T>
           </Pressable>
@@ -68,9 +68,9 @@ export default function Solutions() {
         {filtered.map((p: any) => (
           <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
             <T variant="h3">{p.name}</T>
-            {p.description && <T variant="body" className="mt-1 text-cloud/80" numberOfLines={2}>{p.description}</T>}
+            {p.description && <T variant="body" className="mt-1 text-ink-soft" numberOfLines={2}>{p.description}</T>}
             {p.solutions_content && (
-              <T variant="small" className="mt-3 text-cloud/70" numberOfLines={3}>
+              <T variant="small" className="mt-3 text-ink-faint" numberOfLines={3}>
                 {p.solutions_content}
               </T>
             )}

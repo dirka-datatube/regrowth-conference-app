@@ -58,11 +58,11 @@ export default function SessionDetail() {
   return (
     <Screen>
       <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={28} color="#04072F" />
       </Pressable>
 
       <View className="mt-4">
-        <T variant="caption" className="text-earth normal-case tracking-normal">
+        <T variant="caption" className="text-cta-deep normal-case tracking-normal">
           {new Date(session.start_at).toLocaleString()}
           {session.room ? ` · ${session.room}` : ''}
         </T>
@@ -71,7 +71,7 @@ export default function SessionDetail() {
 
       {session.abstract && (
         <View className="mt-4">
-          <T variant="body" className="text-cloud/90">{session.abstract}</T>
+          <T variant="body" className="text-ink-soft">{session.abstract}</T>
         </View>
       )}
 

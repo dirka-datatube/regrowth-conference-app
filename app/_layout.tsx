@@ -52,7 +52,7 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
-  if (!ready) return <View className="flex-1 bg-midnight" />;
+  if (!ready) return <View className="flex-1 bg-canvas" />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -9,10 +9,11 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
+import * as Haptics from 'expo-haptics';
 import { QrModal } from '@/components/QrModal';
 import { ScannerModal } from '@/components/ScannerModal';
 
-export default function Connections() {
+export default function Connect() {
   const me = useAppStore((s) => s.attendee);
   const qc = useQueryClient();
   const [showQr, setShowQr] = useState(false);
@@ -67,6 +68,7 @@ export default function Connections() {
       return data;
     },
     onSuccess: (res: any) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setShowScanner(false);
       qc.invalidateQueries({ queryKey: ['my-connections', me?.id] });
       Alert.alert(
@@ -82,13 +84,21 @@ export default function Connections() {
 
   return (
     <Screen>
-      <View className="flex-row items-center pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-        </Pressable>
-        <T variant="caption" className="ml-2">Connection Hub</T>
+      <View className="pt-2">
+        <T variant="caption">Connect</T>
+        <T variant="h1" className="mt-2">Your people</T>
+        <T variant="body" className="mt-1 text-ink-soft">
+          Swap details in seconds — scan, share, remember everyone.
+        </T>
       </View>
-      <T variant="h1" className="mt-2">Your people</T>
+
+      <View className="mt-4">
+        <Button
+          label="Browse all attendees"
+          variant="ghost"
+          onPress={() => router.push('/attendees')}
+        />
+      </View>
 
       <View className="flex-row gap-3 mt-6">
         <View className="flex-1">
@@ -120,10 +130,10 @@ export default function Connections() {
                 {p.captured_email && (
                   <Pressable
                     onPress={() => Linking.openURL(`mailto:${p.captured_email}`)}
-                    className="mt-3 bg-snow/5 rounded-pill px-4 py-2 self-start flex-row items-center"
+                    className="mt-3 bg-surface rounded-pill px-4 py-2 self-start flex-row items-center"
                   >
                     <Ionicons name="mail" size={14} color="#D17F5D" />
-                    <T variant="small" className="ml-2 text-snow">Follow up</T>
+                    <T variant="small" className="ml-2 text-ink">Follow up</T>
                   </Pressable>
                 )}
               </Card>
@@ -146,7 +156,7 @@ export default function Connections() {
                   <Pressable
                     onPress={() => Linking.openURL(`mailto:${c.other.email}`)}
                     hitSlop={10}
-                    className="bg-snow/5 rounded-pill px-3 py-2"
+                    className="bg-surface rounded-pill px-3 py-2"
                   >
                     <Ionicons name="mail" size={16} color="#D17F5D" />
                   </Pressable>
@@ -155,7 +165,7 @@ export default function Connections() {
             ))
           ) : (
             <Card>
-              <T variant="body" className="text-cloud/80">
+              <T variant="body" className="text-ink-soft">
                 Scan someone's QR to start your contact list. Show yours with "My QR".
               </T>
             </Card>

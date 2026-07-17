@@ -67,20 +67,20 @@ export default function AttendeeDetail() {
   return (
     <Screen>
       <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={28} color="#04072F" />
       </Pressable>
 
       <View className="items-center mt-4">
         {a.photo_url ? (
-          <Image source={{ uri: a.photo_url }} className="w-32 h-32 rounded-full bg-snow/10" />
+          <Image source={{ uri: a.photo_url }} className="w-32 h-32 rounded-full bg-surface-alt" />
         ) : (
-          <View className="w-32 h-32 rounded-full bg-snow/10 items-center justify-center">
-            <Ionicons name="person" size={48} color="#DCD9D0" />
+          <View className="w-32 h-32 rounded-full bg-surface-alt items-center justify-center">
+            <Ionicons name="person" size={48} color="#8B8EA6" />
           </View>
         )}
         <T variant="h1" className="mt-4 text-center">{a.name}</T>
         {(a.role || a.company) && (
-          <T variant="body" className="mt-1 text-cloud/80 text-center">
+          <T variant="body" className="mt-1 text-ink-soft text-center">
             {[a.role, a.company].filter(Boolean).join(' · ')}
           </T>
         )}
@@ -89,8 +89,8 @@ export default function AttendeeDetail() {
       {a.interests?.length > 0 && (
         <View className="mt-6 flex-row flex-wrap justify-center gap-2">
           {a.interests.map((tag: string) => (
-            <View key={tag} className="bg-snow/5 border border-snow/10 rounded-pill px-3 py-1">
-              <T variant="caption" className="normal-case tracking-normal text-cloud">{tag}</T>
+            <View key={tag} className="bg-surface border border-line rounded-pill px-3 py-1">
+              <T variant="caption" className="normal-case tracking-normal text-ink-soft">{tag}</T>
             </View>
           ))}
         </View>
@@ -99,7 +99,7 @@ export default function AttendeeDetail() {
       {a.bio && (
         <View className="mt-6">
           <T variant="sub">About</T>
-          <T variant="body" className="mt-2 text-cloud/90">{a.bio}</T>
+          <T variant="body" className="mt-2 text-ink-soft">{a.bio}</T>
         </View>
       )}
 

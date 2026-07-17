@@ -53,12 +53,12 @@ export default function BusinessCard() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Business card</T>
       </View>
       <T variant="h1" className="mt-2">Capture a card</T>
-      <T variant="body" className="mt-2 text-cloud/80">
+      <T variant="body" className="mt-2 text-ink-soft">
         Take a photo and we'll extract the details. They'll go into your
         connections as a pending contact until you confirm.
       </T>

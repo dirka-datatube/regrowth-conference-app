@@ -26,14 +26,14 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#04072F',
-          borderTopColor: '#1a1d3d',
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E5E2D9',
           height: 84,
           paddingTop: 8,
           paddingBottom: 24,
         },
-        tabBarActiveTintColor: '#D17F5D',
-        tabBarInactiveTintColor: '#8A8DA6',
+        tabBarActiveTintColor: '#B85F3D',
+        tabBarInactiveTintColor: '#8B8EA6',
         tabBarLabelStyle: {
           fontSize: 11,
           letterSpacing: 1,
@@ -49,13 +49,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="agenda"
         options={{
           title: 'Agenda',
@@ -63,10 +56,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="notes"
+        name="connect"
         options={{
-          title: 'Event Notes',
-          tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" size={size} color={color} />,
+          title: 'Connect',
+          tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: 'More',
+          tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={color} />,
         }}
       />
     </Tabs>

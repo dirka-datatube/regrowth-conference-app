@@ -43,15 +43,15 @@ export default function NoteDetail() {
     <Screen>
       <View className="flex-row items-center justify-between pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <Pressable onPress={share} hitSlop={10}>
-          <Ionicons name="share-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="share-outline" size={24} color="#04072F" />
         </Pressable>
       </View>
 
       {session && (
-        <T variant="caption" className="text-earth normal-case tracking-normal mt-4">
+        <T variant="caption" className="text-cta-deep normal-case tracking-normal mt-4">
           {session.title}
         </T>
       )}
@@ -64,7 +64,7 @@ export default function NoteDetail() {
       {data.ai_summary && (
         <View className="mt-6">
           <T variant="sub">AI summary</T>
-          <Card className="mt-3" variant="earth">
+          <Card className="mt-3" variant="feature">
             <T variant="body">{data.ai_summary}</T>
           </Card>
         </View>

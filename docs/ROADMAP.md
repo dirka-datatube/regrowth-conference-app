@@ -87,19 +87,38 @@ for the full record and remaining launch checklist.**
 
 ---
 
-## 2. The five sprints
+## 2. The sprints
 
-Each sprint has a full brief in `docs/sprints/`. They are strictly ordered —
-each one's Definition of Done is a prerequisite for the next. Suggested
-cadence: 2 weeks each, ~10 working days. Solo-developer-plus-agent friendly.
+Each sprint has a full brief in `docs/sprints/`. Strictly ordered — each
+one's Definition of Done is a prerequisite for the next.
 
-| # | Sprint | Outcome when done | Spec DoD items |
-| --- | --- | --- | --- |
-| 1 | [Live backend & working auth](sprints/sprint-01-live-backend-and-auth.md) | Real device logs in via magic link against live Supabase; CI green; app buildable | §10.1 |
-| 2 | [Admin panel & content pipeline](sprints/sprint-02-admin-and-content-pipeline.md) | Kylie's team loads real content; it appears on device < 30 s; AC sync runs on schedule | §10.2, §10.7 |
-| 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | QR connect, business-card OCR, AI note summaries, moderated Q&A all work end-to-end | §10.3, §10.4, §10.5 |
-| 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | Session reminders arrive on time; check-in works 3 ways; auction is race-safe & realtime | §10.6, §10.8 |
-| 5 | [Hardening & TestFlight launch](sprints/sprint-05-hardening-and-testflight.md) | Security/perf audit passed, observability live, TestFlight external build in Kylie's hands, event-day runbook | all of §10 verified |
+### Phase one (executed 2026-07-17 — see the execution report)
+
+| # | Sprint | Status |
+| --- | --- | --- |
+| 1 | [Live backend & working auth](sprints/sprint-01-live-backend-and-auth.md) | ✅ done (device pass → Sprint 10) |
+| 2 | [Admin panel & content pipeline](sprints/sprint-02-admin-and-content-pipeline.md) | ✅ built (Vercel deploy → Sprint 9) |
+| 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | ✅ done (device pass → Sprint 10) |
+| 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | ✅ done (APNs → Sprint 10) |
+| 5 | [Hardening & launch prep](sprints/sprint-05-hardening-and-testflight.md) | ◐ automatable portion done; remainder redistributed into Sprints 9–10 |
+
+### Phase two (next five)
+
+| # | Sprint | Outcome when done |
+| --- | --- | --- |
+| 6 | [**Brand UI/UX overhaul**](sprints/sprint-06-brand-ui-overhaul.md) *(the big one, ~3 wks)* | The app looks and feels like REGROWTH — light, clean, photography-forward, simple navigation (4 tabs, two-tap rule); every screen designed, Kylie sign-off on a screenshot gallery |
+| 7 | [Speed & frictionless entry](sprints/sprint-07-speed-and-frictionless-entry.md) | Hard performance budgets met (<2 s cold start); OTP login fallback; one-tap geofence check-in; venue QR posters |
+| 8 | [Onboarding & personalisation v2](sprints/sprint-08-onboarding-and-personalisation.md) | 60-second onboarding, interest chips feeding better matching, Home day-timeline, gallery uploads, podcast mirror, "don't miss this" |
+| 9 | [Content, integrations & comms go-live](sprints/sprint-09-content-integrations-golive.md) | Real AC data + automations, custom SMTP, admin on Vercel + team trained, real content loaded, brief's open questions decided |
+| 10 | [TestFlight, UAT & event readiness](sprints/sprint-10-testflight-uat-event-readiness.md) | Full §10 verified on hardware, scale + RLS tests in CI, two UAT cycles, go/no-go review |
+
+**Brand direction note (Sprint 6 input):** REGROWTH's real collateral
+(email screenshots, 2026-07-17) is **light-first** — Snow/Cloud surfaces,
+Midnight serif headings, Earth CTAs, Ocean accents, RG monogram — while the
+original build prompt specified a Midnight-dark default. Sprint 6 resolves
+this deliberately (recommendation: light-first with dark reserved for hero
+moments), ratified against the brand guidelines PDF once loaded into
+`docs/brand/`.
 
 ## 3. How to run a sprint with an AI agent
 

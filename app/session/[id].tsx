@@ -50,7 +50,19 @@ export default function SessionDetail() {
         await supabase.from('schedule_picks').insert({ attendee_id: attendeeId, session_id: id });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['picked', id, attendeeId] }),
+    // Optimistic: flip immediately, reconcile on error.
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['picked', id, attendeeId] });
+      const prev = qc.getQueryData(['picked', id, attendeeId]);
+      qc.setQueryData(['picked', id, attendeeId], !picked);
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => qc.setQueryData(['picked', id, attendeeId], ctx?.prev),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['picked', id, attendeeId] });
+      qc.invalidateQueries({ queryKey: ['my-upcoming', attendeeId] });
+      qc.invalidateQueries({ queryKey: ['schedule_picks', attendeeId] });
+    },
   });
 
   if (!session) return null;

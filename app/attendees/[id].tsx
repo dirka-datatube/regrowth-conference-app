@@ -1,10 +1,11 @@
-import { View, Image, Pressable, Alert } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 
@@ -72,7 +73,7 @@ export default function AttendeeDetail() {
 
       <View className="items-center mt-4">
         {a.photo_url ? (
-          <Image source={{ uri: a.photo_url }} className="w-32 h-32 rounded-full bg-surface-alt" />
+          <Photo uri={a.photo_url} width={256} className="w-32 h-32 rounded-full bg-surface-alt" />
         ) : (
           <View className="w-32 h-32 rounded-full bg-surface-alt items-center justify-center">
             <Ionicons name="person" size={48} color="#8B8EA6" />

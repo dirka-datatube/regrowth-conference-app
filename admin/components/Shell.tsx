@@ -16,6 +16,7 @@ const NAV = [
   ['Push composer', '/push'],
   ['Auction', '/auction'],
   ['Check-in desk', '/checkin'],
+  ['Check-in poster', '/poster'],
   ['Reports', '/reports'],
 ] as const;
 

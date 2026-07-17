@@ -5,6 +5,8 @@ import { useAppStore } from '@/lib/store';
 import { useAttendee } from '@/lib/hooks/useAttendee';
 import { useRealtimeInvalidation } from '@/lib/hooks/useRealtimeInvalidation';
 import { registerForPush } from '@/lib/push';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { IS_DEMO } from '@/lib/demo';
 
 export default function TabsLayout() {
@@ -12,12 +14,45 @@ export default function TabsLayout() {
   const { data: attendee } = useAttendee();
   useRealtimeInvalidation();
 
+  const qc = useQueryClient();
+
   useEffect(() => {
     if (IS_DEMO) return;
     if (attendee?.id) {
       registerForPush(attendee.id).catch(() => {});
     }
-  }, [attendee?.id]);
+    // Warm the day's content in parallel so tab switches feel instant.
+    if (attendee?.event_id) {
+      const eventId = attendee.event_id;
+      qc.prefetchQuery({
+        queryKey: ['sessions', eventId],
+        queryFn: async () => {
+          const { data } = await supabase
+            .from('sessions')
+            .select(
+              `id, title, abstract, start_at, end_at, room, type, tags,
+               speakers:session_speakers(speaker:speakers(id, name, headshot_url, title))`,
+            )
+            .eq('event_id', eventId)
+            .eq('is_published', true)
+            .order('start_at');
+          return data ?? [];
+        },
+      });
+      qc.prefetchQuery({
+        queryKey: ['speakers', eventId],
+        queryFn: async () => {
+          const { data } = await supabase
+            .from('speakers')
+            .select('id, name, title, company, headshot_url, tags')
+            .eq('event_id', eventId)
+            .order('display_order')
+            .order('name');
+          return data ?? [];
+        },
+      });
+    }
+  }, [attendee?.id, attendee?.event_id, qc]);
 
   if (!session && !IS_DEMO) return <Redirect href="/(auth)/welcome" />;
 

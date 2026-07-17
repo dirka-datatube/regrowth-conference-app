@@ -1,10 +1,11 @@
-import { View, Image, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoPartners } from '@/lib/demo';
@@ -43,11 +44,7 @@ export default function Partners() {
           <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
             <View className="flex-row items-center">
               {p.logo_url ? (
-                <Image
-                  source={{ uri: p.logo_url }}
-                  className="w-16 h-16 rounded-card bg-cloud"
-                  resizeMode="contain"
-                />
+                <Photo uri={p.logo_url} width={128} contentFit="contain" className="w-16 h-16 rounded-card bg-cloud" />
               ) : (
                 <View className="w-16 h-16 rounded-card bg-cloud items-center justify-center">
                   <Ionicons name="business" size={28} color="#04072F" />

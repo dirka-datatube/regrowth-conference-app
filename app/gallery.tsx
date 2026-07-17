@@ -1,9 +1,10 @@
-import { View, Pressable, Image } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoGallery } from '@/lib/demo';
@@ -39,7 +40,7 @@ export default function Gallery() {
       <View className="flex-row flex-wrap mt-6 -mx-1">
         {data?.map((g: any) => (
           <View key={g.id} className="w-1/3 p-1">
-            <Image source={{ uri: g.url }} className="w-full aspect-square rounded-card bg-surface" />
+            <Photo uri={g.url} width={360} className="w-full aspect-square rounded-card bg-surface" />
           </View>
         ))}
       </View>

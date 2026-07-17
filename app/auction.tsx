@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Image, Pressable, Alert, TextInput } from 'react-native';
+import { View, Pressable, Alert, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoAuction } from '@/lib/demo';
@@ -105,7 +106,7 @@ export default function Auction() {
         {items?.map((item: any) => (
           <Card key={item.id}>
             {item.photo_url && (
-              <Image source={{ uri: item.photo_url }} className="w-full h-40 rounded-card mb-3" />
+              <Photo uri={item.photo_url} width={720} className="w-full h-40 rounded-card mb-3" />
             )}
             <T variant="h3">{item.name}</T>
             {item.description && <T variant="body" className="mt-1 text-ink-soft">{item.description}</T>}

@@ -1,10 +1,11 @@
-import { View, Image, Pressable, Linking, Alert } from 'react-native';
+import { View, Pressable, Linking, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 
@@ -74,7 +75,7 @@ export default function PartnerDetail() {
 
       {partner.logo_url && (
         <View className="bg-cloud rounded-card mt-4 p-6 items-center">
-          <Image source={{ uri: partner.logo_url }} className="w-40 h-24" resizeMode="contain" />
+          <Photo uri={partner.logo_url} width={320} contentFit="contain" className="w-40 h-24" />
         </View>
       )}
 

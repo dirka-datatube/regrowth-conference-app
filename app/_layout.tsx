@@ -14,12 +14,17 @@ import { IS_DEMO, demoAttendee } from '@/lib/demo';
 import { initSentry } from '@/lib/sentry';
 
 SplashScreen.preventAutoHideAsync();
-initSentry();
 
 export default function RootLayout() {
   const setSession = useAppStore((s) => s.setSession);
   const setAttendee = useAppStore((s) => s.setAttendee);
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Deferred so analytics never sits on the critical startup path.
+    const t = setTimeout(initSentry, 0);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (IS_DEMO) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, RefreshControl, Pressable, Image, ScrollView, Alert } from 'react-native';
+import { View, RefreshControl, Pressable, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,9 +8,11 @@ import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { Monogram } from '@/components/Monogram';
 import { CardSkeleton } from '@/components/Skeleton';
+import { Photo } from '@/components/Photo';
 import { useAppStore } from '@/lib/store';
 import { useHappeningNow, useUpNext, useMyUpcoming } from '@/lib/hooks/useSessions';
 import { useSuggestions } from '@/lib/hooks/useSuggestions';
+import { useGeofenceCheckin } from '@/lib/hooks/useGeofenceCheckin';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { IS_DEMO } from '@/lib/demo';
@@ -25,6 +27,7 @@ export default function Home() {
   const upNext = useUpNext();
   const myDay = useMyUpcoming();
   const suggestions = useSuggestions();
+  useGeofenceCheckin();
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [checkingIn, setCheckingIn] = useState(false);
@@ -86,7 +89,7 @@ export default function Home() {
             accessibilityLabel="My profile"
           >
             {attendee?.photo_url ? (
-              <Image source={{ uri: attendee.photo_url }} className="w-8 h-8 rounded-full bg-surface-alt" />
+              <Photo uri={attendee.photo_url} width={64} className="w-8 h-8 rounded-full bg-surface-alt" />
             ) : (
               <Monogram size={30} />
             )}
@@ -207,7 +210,7 @@ export default function Home() {
                 className="bg-surface border border-line rounded-card p-4 mr-3 w-56 active:opacity-90"
               >
                 {p.photo_url ? (
-                  <Image source={{ uri: p.photo_url }} className="w-14 h-14 rounded-full bg-surface-alt" />
+                  <Photo uri={p.photo_url} width={112} className="w-14 h-14 rounded-full bg-surface-alt" />
                 ) : (
                   <Monogram size={56} />
                 )}

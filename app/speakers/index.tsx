@@ -1,10 +1,11 @@
-import { View, Image, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoSpeakers } from '@/lib/demo';
@@ -46,7 +47,7 @@ export default function Speakers() {
           >
             <Card className="items-center">
               {sp.headshot_url ? (
-                <Image source={{ uri: sp.headshot_url }} className="w-24 h-24 rounded-full bg-cloud" />
+                <Photo uri={sp.headshot_url} width={192} className="w-24 h-24 rounded-full bg-cloud" />
               ) : (
                 <View className="w-24 h-24 rounded-full bg-cloud items-center justify-center">
                   <Ionicons name="person" size={36} color="#04072F" />

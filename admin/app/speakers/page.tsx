@@ -1,15 +1,17 @@
 'use client';
 
 import { Crud } from '@/components/Crud';
+import { Upload } from '@/components/Upload';
 
 export default function Speakers() {
   return (
     <div>
       <h2>Speakers</h2>
       <p className="sub">
-        Headshot URLs point at the `headshots` storage bucket — upload via
-        Storage in the Supabase dashboard for now, or paste any public URL.
+        Upload a headshot below — the URL copies to your clipboard, ready to
+        paste into the row's headshot field.
       </p>
+      <Upload bucket="headshots" label="Upload a headshot (URL auto-copies)" />
       <Crud
         title="speaker"
         table="speakers"

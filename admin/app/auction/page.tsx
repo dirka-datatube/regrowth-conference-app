@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Crud } from '@/components/Crud';
+import { Upload } from '@/components/Upload';
 import { supabase, audit, EVENT_ID } from '@/lib/supabase';
 
 // Items CRUD + close-out. Closing an item assigns the current top bidder as
@@ -77,6 +78,8 @@ export default function Auction() {
           </tbody>
         </table>
       </div>
+
+      <Upload bucket="auction" label="Upload an item photo (URL auto-copies)" />
 
       <Crud
         title="auction item"

@@ -1,6 +1,7 @@
 'use client';
 
 import { Crud } from '@/components/Crud';
+import { Upload } from '@/components/Upload';
 
 export default function Partners() {
   return (
@@ -10,6 +11,7 @@ export default function Partners() {
         Tags drive "Solutions to Support Your Business" filtering
         (recruitment, tech, marketing, banking, training…).
       </p>
+      <Upload bucket="partner-logos" label="Upload a logo (URL auto-copies)" />
       <Crud
         title="partner"
         table="partners"

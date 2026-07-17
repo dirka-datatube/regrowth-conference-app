@@ -92,26 +92,27 @@ npm install
 
 ### 2. Env vars
 
-Copy `.env.example` to `.env`, fill in Supabase + ActiveCampaign + Claude
-credentials. Public values (Supabase URL/anon key, PostHog) ship in the bundle;
-secrets only live in Supabase edge function env.
+Copy `.env.example` to `.env` — it already contains the live public values
+for the production Supabase project ("ReGrowth App" / `blcfeguqhnggyxvexggy`).
+Secrets only live in Supabase edge function env, never in the app bundle.
 
 ### 3. Supabase
+
+**The production project is already provisioned** (migrations, seed data,
+all 9 edge functions — see `docs/ROADMAP.md` → "Live backend facts").
+For local development instead:
 
 ```bash
 supabase start
 supabase db reset           # applies migrations + seed
-supabase functions deploy --all
+supabase functions serve
 ```
-
-For production, deploy each edge function separately and set secrets via
-`supabase secrets set ANTHROPIC_API_KEY=…` etc.
 
 ### 4. Brand fonts
 
-Drop the four font files into `assets/fonts/` (see the README in there).
-Until that's done, comment out the `useBrandFonts()` call in `app/_layout.tsx`
-to ship with system fallbacks.
+Licensing is deferred (2026-07-17): the app ships with iOS built-in
+fallbacks mapped in `tailwind.config.js`. Restore steps live in
+`lib/fonts.ts` for when Butler / Northwell Alt / DIN are licensed.
 
 ### 5. Run the app
 

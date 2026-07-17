@@ -19,16 +19,15 @@ module.exports = {
         danger: '#B33A3A',
       },
       fontFamily: {
-        // Headings — Butler Light (serif)
-        heading: ['Butler-Light', 'Playfair-Display', 'serif'],
-        // Hero / script flourishes — Northwell Alt
-        script: ['NorthwellAlt', 'cursive'],
-        // Subheadings — DIN
-        sub: ['DIN', 'Inter', 'system-ui'],
-        // Body copy — Butler Light
-        body: ['Butler-Light', 'serif'],
-        // Sans fallback for UI controls
-        sans: ['Inter', 'system-ui'],
+        // Brand font licensing is DEFERRED (decision 2026-07-17). These map
+        // to quality iOS built-ins until Butler / Northwell Alt / DIN files
+        // are licensed and dropped into assets/fonts — then restore:
+        //   heading/body: Butler-Light · script: NorthwellAlt · sub: DIN
+        heading: ['Georgia', 'serif'],
+        script: ['Snell Roundhand', 'cursive'],
+        sub: ['Helvetica Neue', 'system-ui'],
+        body: ['Georgia', 'serif'],
+        sans: ['Helvetica Neue', 'system-ui'],
       },
       fontSize: {
         hero: ['44px', { lineHeight: '52px', letterSpacing: '-0.5px' }],

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Button } from '@/components/Button';
-import { sendMagicLink } from '@/lib/auth';
+import { sendMagicLink, UnregisteredEmailError } from '@/lib/auth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -20,7 +20,14 @@ export default function Login() {
       await sendMagicLink(email);
       router.replace({ pathname: '/(auth)/check-email', params: { email } });
     } catch (e: any) {
-      Alert.alert('Hmm, that didn\'t go through', e?.message ?? 'Please try again in a moment.');
+      if (e instanceof UnregisteredEmailError) {
+        Alert.alert(
+          "We couldn't find your registration",
+          'This email isn\'t on our attendee list yet. Please use the email you registered with, or reach out to the REGROWTH team and we\'ll get you sorted.',
+        );
+      } else {
+        Alert.alert('Hmm, that didn\'t go through', e?.message ?? 'Please try again in a moment.');
+      }
     } finally {
       setLoading(false);
     }

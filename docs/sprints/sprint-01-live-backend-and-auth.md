@@ -20,11 +20,24 @@ Read before starting: `lib/auth.ts`, `lib/supabase.ts`,
 `supabase/migrations/20260101000000_initial_schema.sql` (esp. the
 `current_attendee_id()` helper and `attendees` table), `app/_layout.tsx`.
 
+> **Progress 2026-07-17:** Tasks 1 and 2 are DONE (applied directly to the live
+> project "ReGrowth App" `blcfeguqhnggyxvexggy` via MCP): all four migrations
+> applied, trigger-based auth linking live, client auth updated, seed data
+> loaded, all 9 functions deployed, advisor WARNs remediated. Fonts decision:
+> deferred — fallbacks shipped. REMAINING: task 3 (package bumps + Sentry
+> swap + QR lib), task 4 (CI + EAS), task 5 (device verification), plus the
+> human dashboard items below.
+>
+> **Human dashboard items (no API access — Dirk):**
+> - Auth → URL Configuration: add `regrowth://auth-callback` (+ `exp://` dev URLs) as redirect URLs
+> - Edge Functions → Secrets: set `ANTHROPIC_API_KEY`, `WEBSITE_WEBHOOK_SECRET`; (`ACTIVECAMPAIGN_*`, `EXPO_ACCESS_TOKEN` when available)
+> - Note: default Supabase SMTP is rate-limited (~2 magic-link emails/hour) — fine for testing, needs custom SMTP before the event
+
 ## Prerequisites (human-provided, confirm before starting)
 
-- [ ] Supabase production project created; URL + anon key + service-role key available
+- [x] Supabase production project created — "ReGrowth App" (`blcfeguqhnggyxvexggy`)
 - [ ] Apple Developer account access (for device builds; APNs comes in Sprint 4)
-- [ ] Licensed font files for Butler / Northwell Alt / DIN — or explicit sign-off to ship fallbacks for now
+- [x] Font decision — licensing deferred, iOS built-in fallbacks shipped (2026-07-17)
 
 ## Tasks
 

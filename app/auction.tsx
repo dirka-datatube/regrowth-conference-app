@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Image, Pressable, Alert, TextInput } from 'react-native';
+import { View, Pressable, Alert, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,13 +7,14 @@ import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoAuction } from '@/lib/demo';
+import * as Haptics from 'expo-haptics';
 
 export default function Auction() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
-  const meId = useAppStore((s) => s.attendee?.id);
   const qc = useQueryClient();
   const [bids, setBids] = useState<Record<string, string>>({});
 
@@ -49,16 +50,29 @@ export default function Auction() {
 
   const placeBid = useMutation({
     mutationFn: async ({ itemId, amount }: { itemId: string; amount: number }) => {
-      if (!meId) return;
-      const { error } = await supabase.from('bids').insert({
-        item_id: itemId,
-        attendee_id: meId,
-        amount,
+      // Atomic server-side validation: row lock, min increment, open check,
+      // outbid notification. Direct inserts on bids are revoked.
+      const { error } = await supabase.rpc('place_bid', {
+        p_item_id: itemId,
+        p_amount: amount,
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['auction', eventId] }),
-    onError: (e: any) => Alert.alert("That didn't go through", e?.message ?? 'Try again.'),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      qc.invalidateQueries({ queryKey: ['auction', eventId] });
+    },
+    onError: (e: any) => {
+      const msg = String(e?.message ?? '');
+      if (msg.includes('BID_TOO_LOW')) {
+        Alert.alert('Bid a little higher', 'Someone got in just before you — refresh and try again.');
+      } else if (msg.includes('AUCTION_CLOSED')) {
+        Alert.alert('This one has closed', 'Bidding has ended for this item.');
+      } else {
+        Alert.alert("That didn't go through", msg || 'Try again.');
+      }
+      qc.invalidateQueries({ queryKey: ['auction', eventId] });
+    },
   });
 
   function confirmBid(itemId: string, current: number, starting: number) {
@@ -79,28 +93,28 @@ export default function Auction() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Charity Auction</T>
       </View>
       <T variant="h1" className="mt-2">Bid for good</T>
-      <T variant="body" className="mt-2 text-cloud/80">
+      <T variant="body" className="mt-2 text-ink-soft">
         Every dollar goes to the cause we're supporting this year.
       </T>
 
       <View className="mt-6 gap-y-4">
-        {items?.map((item) => (
+        {items?.map((item: any) => (
           <Card key={item.id}>
             {item.photo_url && (
-              <Image source={{ uri: item.photo_url }} className="w-full h-40 rounded-card mb-3" />
+              <Photo uri={item.photo_url} width={720} className="w-full h-40 rounded-card mb-3" />
             )}
             <T variant="h3">{item.name}</T>
-            {item.description && <T variant="body" className="mt-1 text-cloud/80">{item.description}</T>}
+            {item.description && <T variant="body" className="mt-1 text-ink-soft">{item.description}</T>}
 
             <View className="flex-row mt-4 items-end">
               <View className="flex-1">
                 <T variant="caption">Current bid</T>
-                <T variant="h2" className="text-earth">
+                <T variant="h2" className="text-cta-deep">
                   ${(item.current_bid ?? item.starting_bid).toFixed(0)}
                 </T>
                 <T variant="caption" className="normal-case tracking-normal">
@@ -115,8 +129,8 @@ export default function Auction() {
                 onChangeText={(v) => setBids((b) => ({ ...b, [item.id]: v }))}
                 keyboardType="numeric"
                 placeholder={`$${(item.current_bid ?? item.starting_bid) + 1}`}
-                placeholderTextColor="#8A8DA6"
-                className="flex-1 bg-snow/5 border border-snow/15 rounded-pill px-4 py-3 text-snow font-body text-body"
+                placeholderTextColor="#8B8EA6"
+                className="flex-1 bg-surface border border-line rounded-pill px-4 py-3 text-ink font-body text-body"
               />
               <View>
                 <Button

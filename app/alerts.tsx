@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen } from '@/components/Screen';
+import { Header } from '@/components/Header';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
@@ -31,20 +32,18 @@ export default function Alerts() {
 
   return (
     <Screen>
-      <View className="pt-2">
-        <T variant="caption">Alerts</T>
-        <T variant="h1" className="mt-2">What's happened</T>
-      </View>
+      <Header label="Alerts" />
+      <T variant="h1" className="mt-2">What's happened</T>
 
       <View className="mt-6 gap-y-3">
         {data?.length ? (
           data.map((r: any) => (
             <Card key={r.notification.id}>
-              <T variant="caption" className="text-earth normal-case tracking-normal">
+              <T variant="caption" className="text-cta-deep normal-case tracking-normal">
                 {labelForType(r.notification.type)}
               </T>
               <T variant="h3" className="mt-1">{r.notification.title}</T>
-              <T variant="body" className="mt-1 text-cloud/80">{r.notification.body}</T>
+              <T variant="body" className="mt-1 text-ink-soft">{r.notification.body}</T>
             </Card>
           ))
         ) : (

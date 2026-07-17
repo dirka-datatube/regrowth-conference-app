@@ -2,16 +2,18 @@ import { Text, TextProps } from 'react-native';
 
 type Variant = 'hero' | 'h1' | 'h2' | 'h3' | 'sub' | 'body' | 'small' | 'caption' | 'script';
 
+// Light-first defaults. On moment (dark) screens pass text-moment-ink /
+// text-moment-soft overrides via className.
 const styles: Record<Variant, string> = {
-  hero: 'font-heading text-snow text-hero',
-  h1: 'font-heading text-snow text-h1',
-  h2: 'font-heading text-snow text-h2',
-  h3: 'font-heading text-snow text-h3',
-  sub: 'font-sub text-cloud text-small uppercase tracking-widest',
-  body: 'font-body text-snow text-body',
-  small: 'font-sans text-cloud text-small',
-  caption: 'font-sub text-muted text-caption uppercase tracking-widest',
-  script: 'font-script text-earth text-h1',
+  hero: 'font-heading text-ink text-hero',
+  h1: 'font-heading text-ink text-h1',
+  h2: 'font-heading text-ink text-h2',
+  h3: 'font-heading text-ink text-h3',
+  sub: 'font-sub text-ink-faint text-caption uppercase tracking-widest',
+  body: 'font-body text-ink-soft text-body',
+  small: 'font-sans text-ink-soft text-small',
+  caption: 'font-sub text-ink-faint text-caption uppercase tracking-widest',
+  script: 'font-script text-cta text-h1',
 };
 
 export function T({

@@ -31,43 +31,41 @@ can log in), all 9 edge functions deployed, and the security-advisor WARNs
 remediated in `20260101000300_security_hardening.sql`. Remaining defects and
 gaps, in priority order:
 
-1. ~~🔴 Login broken (auth→attendee linking)~~ **FIXED 2026-07-17** —
-   `handle_new_auth_user` trigger (migration `20260101000200`) links
-   `auth.users` → `attendees`/`admin_users` by email and rejects unknown
-   emails; client updated (`shouldCreateUser: true` + friendly rejection
-   copy). **Not yet verified on a device** — Sprint 1 task 5.
-2. **🔴 No scheduled jobs.** AC sync "every 15 mins", daily suggestions,
-   post-session summaries, and session-starting pushes all need pg_cron (or an
-   external scheduler). None is wired. **Sprints 2 & 4.**
-3. **🟠 Auction has no server-side bid logic.** `bids` insert doesn't update
-   `auction_items.current_bid`, nothing validates amount > current, no outbid
-   notification. Race conditions guaranteed. Needs an RPC + trigger. **Sprint 4.**
-4. **🟠 QR code rendering is a placeholder.** `components/QrModal.tsx` renders a
-   stub box; `react-native-qrcode-svg` needs adding. **Sprint 3.**
-5. ~~🟠 Brand fonts missing~~ **RESOLVED by decision 2026-07-17** — licensing
-   deferred; iOS built-in fallbacks mapped in `tailwind.config.js`, restore
-   steps documented in `lib/fonts.ts`.
-6. **🟡 Package drift:** `expo-image-picker` needs ~15.1.0; `sentry-expo` is
-   deprecated → replace with `@sentry/react-native`. (Seen as warnings on first
-   local run.) **Sprint 1.**
-7. **🟡 Hand-written DB types** (`types/database.ts`) — replace with generated
-   types now that the project is live. **Sprint 1.**
-8. ~~🟡 Storage RLS policies unqualified function call~~ **FIXED 2026-07-17** —
-   `public.current_attendee_id()` qualified in the storage migration as applied.
-9. **🟡 No tests, no CI, no EAS config.** **Sprint 1.**
-10. **🟡 Demo mode ships in the bundle** — must be excluded or hard-guarded in
-    production builds. **Sprint 5 (checked in Sprint 1 CI).**
-11. **🟡 `send-push` runs one count-query per attendee** for the daily cap (N+1).
-    Fine for hundreds of attendees; optimise before scaling. **Sprint 4.**
-12. **⬜ Admin panel does not exist.** It's a separate Lovable/Next.js project
-    against the same Supabase instance. **Sprint 2 is where it must land.**
-13. **🟡 Edge functions trust caller-supplied IDs** (`qr-connect`,
-    `business-card-ocr`, `check-in`, `ac-event-emit` take attendee ids from the
-    request body). The API gateway requires a valid JWT (verify_jwt), so only
-    signed-in attendees can call them — but impersonation between attendees is
-    possible until identities are derived from the JWT. **Sprint 3 fix.**
-14. **🟡 Advisor WARN accepted for now:** `citext` extension installed in the
-    `public` schema (moving it is disruptive mid-build). Revisit in Sprint 5.
+**Update 2026-07-17 (evening): Sprints 1–4 executed, Sprint 5 partially —
+see [`docs/reports/2026-07-17-sprint-execution.md`](reports/2026-07-17-sprint-execution.md)
+for the full record and remaining launch checklist.**
+
+1. ~~🔴 Login broken (auth→attendee linking)~~ **FIXED + DB-verified** —
+   trigger rejects unknown emails, links `user_id`; client updated. Device
+   pass pending.
+2. ~~🔴 No scheduled jobs~~ **FIXED** — 6 pg_cron jobs live and verified
+   firing (AC sync, notification queue, session reminders, note summaries,
+   daily suggestions, people-to-meet).
+3. ~~🟠 Auction race conditions~~ **FIXED** — `place_bid` RPC (row lock,
+   validation, atomic update, outbid push); direct bid inserts revoked.
+4. ~~🟠 QR placeholder~~ **FIXED** — real QR render with `regrowth:` payload
+   prefix, validated client + server side.
+5. ~~🟠 Brand fonts missing~~ **RESOLVED by decision** — licensing deferred;
+   iOS built-in fallbacks mapped in `tailwind.config.js`.
+6. ~~🟡 Package drift~~ **FIXED** — image-picker bumped, Sentry migrated to
+   `@sentry/react-native`, QR libs added.
+7. ~~🟡 Hand-written DB types~~ **FIXED** — generated types committed;
+   client + domain aliases derive from them.
+8. ~~🟡 Storage RLS unqualified function call~~ **FIXED**.
+9. ~~🟡 No CI / EAS~~ **FIXED** — GitHub Actions (app typecheck+lint+demo
+   guard, admin typecheck) + `eas.json`. RLS test suite still to come (below).
+10. ~~🟡 Demo mode unguarded~~ **FIXED** — CI fails if demo mode appears in
+    build profiles.
+11. ~~🟡 send-push N+1~~ **FIXED** — single grouped cap query + dead-token pruning.
+12. ~~⬜ Admin panel missing~~ **BUILT** — in-repo `admin/` (Next.js 14),
+    RLS-scoped, audit-logged. Vercel deploy pending.
+13. ~~🟡 Edge functions trust caller-supplied IDs~~ **FIXED** — identity now
+    derived from the JWT in all attendee-facing functions.
+14. **🟡 Advisor WARN accepted:** `citext` in `public` schema. Revisit at launch hardening.
+15. **⬜ Still open (device/human-bound):** on-device §10 verification, APNs +
+    TestFlight, custom SMTP, function secrets (Anthropic/AC/Expo), geofence
+    prompt app-side, "don't miss this" sweep, RLS pgTAP suite, gallery
+    uploads, podcast RSS mirror. Full list: the execution report §3.
 
 ### Live backend facts (for agents)
 
@@ -89,19 +87,40 @@ gaps, in priority order:
 
 ---
 
-## 2. The five sprints
+## 2. The sprints
 
-Each sprint has a full brief in `docs/sprints/`. They are strictly ordered —
-each one's Definition of Done is a prerequisite for the next. Suggested
-cadence: 2 weeks each, ~10 working days. Solo-developer-plus-agent friendly.
+Each sprint has a full brief in `docs/sprints/`. Strictly ordered — each
+one's Definition of Done is a prerequisite for the next.
 
-| # | Sprint | Outcome when done | Spec DoD items |
-| --- | --- | --- | --- |
-| 1 | [Live backend & working auth](sprints/sprint-01-live-backend-and-auth.md) | Real device logs in via magic link against live Supabase; CI green; app buildable | §10.1 |
-| 2 | [Admin panel & content pipeline](sprints/sprint-02-admin-and-content-pipeline.md) | Kylie's team loads real content; it appears on device < 30 s; AC sync runs on schedule | §10.2, §10.7 |
-| 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | QR connect, business-card OCR, AI note summaries, moderated Q&A all work end-to-end | §10.3, §10.4, §10.5 |
-| 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | Session reminders arrive on time; check-in works 3 ways; auction is race-safe & realtime | §10.6, §10.8 |
-| 5 | [Hardening & TestFlight launch](sprints/sprint-05-hardening-and-testflight.md) | Security/perf audit passed, observability live, TestFlight external build in Kylie's hands, event-day runbook | all of §10 verified |
+### Phase one (executed 2026-07-17 — see the execution report)
+
+| # | Sprint | Status |
+| --- | --- | --- |
+| 1 | [Live backend & working auth](sprints/sprint-01-live-backend-and-auth.md) | ✅ done (device pass → Sprint 10) |
+| 2 | [Admin panel & content pipeline](sprints/sprint-02-admin-and-content-pipeline.md) | ✅ built (Vercel deploy → Sprint 9) |
+| 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | ✅ done (device pass → Sprint 10) |
+| 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | ✅ done (APNs → Sprint 10) |
+| 5 | [Hardening & launch prep](sprints/sprint-05-hardening-and-testflight.md) | ◐ automatable portion done; remainder redistributed into Sprints 9–10 |
+
+### Phase two (executed 2026-07-17 — see [the phase-two report](reports/2026-07-17-phase-two-execution.md))
+
+| # | Sprint | Status |
+| --- | --- | --- |
+| 6 | [**Brand UI/UX overhaul**](sprints/sprint-06-brand-ui-overhaul.md) | ✅ done — light-first system, 4-tab nav, Home v2 (PDF ratification + screenshot gallery pending) |
+| 7 | [Speed & frictionless entry](sprints/sprint-07-speed-and-frictionless-entry.md) | ✅ done — expo-image/FlashList/prefetch/optimistic, OTP fallback, geofence check-in, QR posters (device budgets need hardware) |
+| 8 | [Onboarding & personalisation v2](sprints/sprint-08-onboarding-and-personalisation.md) | ✅ done — onboarding, chips, don't-miss + podcast jobs live, gallery uploads |
+| 9 | [Content & integrations go-live](sprints/sprint-09-content-integrations-golive.md) | ◐ automatable done — creds/SMTP/Vercel/content are human-gated |
+| 10 | [TestFlight, UAT & readiness](sprints/sprint-10-testflight-uat-event-readiness.md) | ◐ tests + RLS suite (caught & fixed a real policy bug) + privacy manifest done — Apple chain + UAT human-gated |
+
+**Next actions live in [`docs/launch-checklist.md`](launch-checklist.md).**
+
+**Brand direction note (Sprint 6 input):** REGROWTH's real collateral
+(email screenshots, 2026-07-17) is **light-first** — Snow/Cloud surfaces,
+Midnight serif headings, Earth CTAs, Ocean accents, RG monogram — while the
+original build prompt specified a Midnight-dark default. Sprint 6 resolves
+this deliberately (recommendation: light-first with dark reserved for hero
+moments), ratified against the brand guidelines PDF once loaded into
+`docs/brand/`.
 
 ## 3. How to run a sprint with an AI agent
 

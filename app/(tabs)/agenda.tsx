@@ -16,7 +16,7 @@ export default function Agenda() {
   const grouped = useMemo(() => {
     if (!sessions) return [] as { day: string; items: typeof sessions }[];
     const filtered = filter === 'mine' && myPicks
-      ? sessions.filter((s) => myPicks.has(s.id))
+      ? sessions.filter((s: any) => myPicks.has(s.id))
       : sessions;
     const byDay = new Map<string, typeof sessions>();
     for (const s of filtered) {
@@ -39,14 +39,14 @@ export default function Agenda() {
         <T variant="h1" className="mt-2">What's on</T>
       </View>
 
-      <View className="flex-row mt-4 bg-snow/5 rounded-pill p-1">
+      <View className="flex-row mt-4 bg-surface rounded-pill p-1">
         {(['all', 'mine'] as Filter[]).map((f) => (
           <Pressable
             key={f}
             onPress={() => setFilter(f)}
-            className={`flex-1 rounded-pill py-2 items-center ${filter === f ? 'bg-earth' : ''}`}
+            className={`flex-1 rounded-pill py-2 items-center ${filter === f ? 'bg-cta' : ''}`}
           >
-            <T variant="small" className={filter === f ? 'text-snow' : 'text-cloud'}>
+            <T variant="small" className={filter === f ? 'text-snow' : 'text-ink-soft'}>
               {f === 'all' ? 'All sessions' : 'My schedule'}
             </T>
           </Pressable>
@@ -58,9 +58,9 @@ export default function Agenda() {
           <View key={day}>
             <T variant="sub">{day}</T>
             <View className="mt-3 gap-y-2">
-              {items.map((s) => (
+              {items.map((s: any) => (
                 <Card key={s.id} onPress={() => router.push(`/session/${s.id}`)}>
-                  <T variant="caption" className="normal-case tracking-normal text-earth">
+                  <T variant="caption" className="normal-case tracking-normal text-cta-deep">
                     {formatTime(s.start_at)} – {formatTime(s.end_at)}{s.room ? ` · ${s.room}` : ''}
                   </T>
                   <T variant="h3" className="mt-1">{s.title}</T>

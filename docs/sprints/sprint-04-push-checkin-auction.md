@@ -7,6 +7,12 @@ is race-safe and updates live on every phone.
 **Duration:** ~2 weeks · **Requires:** Sprints 1–3 done
 **Spec DoD covered:** §10.6 (session-starting push), plus auction + check-in features
 
+
+> **Progress 2026-07-17:** Executed in the autonomous sprint run — see
+> [`docs/reports/2026-07-17-sprint-execution.md`](../reports/2026-07-17-sprint-execution.md)
+> for what shipped, verification evidence, and the remaining device/human-bound
+> items for this sprint.
+
 ---
 
 ## Context for the agent

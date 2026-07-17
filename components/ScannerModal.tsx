@@ -22,9 +22,9 @@ export function ScannerModal({
 
   return (
     <Modal animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-midnight">
+      <View className="flex-1 bg-moment">
         <View className="flex-row items-center justify-between p-5 pt-16">
-          <T variant="caption">Scan a QR</T>
+          <T variant="caption" className="text-moment-soft">Scan a QR</T>
           <Pressable onPress={onClose} hitSlop={10}>
             <Ionicons name="close" size={28} color="#FFFFFF" />
           </Pressable>
@@ -43,8 +43,8 @@ export function ScannerModal({
           />
         ) : (
           <View className="flex-1 items-center justify-center px-6">
-            <T variant="h3" className="text-center">We need camera access</T>
-            <T variant="body" className="mt-2 text-cloud/80 text-center">
+            <T variant="h3" className="text-center text-moment-ink">We need camera access</T>
+            <T variant="body" className="mt-2 text-moment-soft text-center">
               We'll use it to scan QR codes — never anything more.
             </T>
             <View className="mt-6 w-full">

@@ -14,15 +14,15 @@ export default function CommBank() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">CommBank</T>
       </View>
 
       <View className="mt-4">
-        <T variant="caption" className="text-earth normal-case tracking-normal">Banking partner</T>
+        <T variant="caption" className="text-cta-deep normal-case tracking-normal">Banking partner</T>
         <T variant="h1" className="mt-2">CommBank × REGROWTH®</T>
-        <T variant="body" className="mt-3 text-cloud/80">
+        <T variant="body" className="mt-3 text-ink-soft">
           We've partnered with CommBank to bring the real estate industry tools
           built for how we work. Speak with the team on-site or learn more here.
         </T>
@@ -30,7 +30,7 @@ export default function CommBank() {
 
       <Card className="mt-6">
         <T variant="sub">On-site at the conference</T>
-        <T variant="body" className="mt-2 text-cloud/90">
+        <T variant="body" className="mt-2 text-ink-soft">
           Find the CommBank lounge in the foyer for casual conversations, free coffee,
           and a chat with their real estate banking specialists.
         </T>

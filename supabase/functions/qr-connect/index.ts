@@ -1,33 +1,32 @@
-// Records a mutual connection from a QR scan. The scanner sends the scanned
-// attendee's qr_token; we resolve them, then insert a connection (smaller uuid first).
+// Records a mutual connection from a QR scan. The scanner identity comes
+// from the caller's JWT (never the request body); the request carries only
+// the scanned attendee's qr_token.
 
 import { corsHeaders } from '../_shared/cors.ts';
 import { adminClient } from '../_shared/supabase.ts';
+import { requireAttendee } from '../_shared/auth.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const { scanner_id, scanned_qr_token } = (await req.json()) as {
-      scanner_id: string;
-      scanned_qr_token: string;
-    };
+    const { scanned_qr_token } = (await req.json()) as { scanned_qr_token: string };
     const supabase = adminClient();
+    const { attendee: scanner } = await requireAttendee(req, supabase);
 
-    const { data: scanner } = await supabase
-      .from('attendees')
-      .select('id, event_id')
-      .eq('id', scanner_id)
-      .single();
+    // QR payloads are prefixed "regrowth:<token>"; accept bare tokens too.
+    const token = String(scanned_qr_token ?? '').replace(/^regrowth:/, '').trim();
+    if (!token) throw new Error('INVALID_QR');
+
     const { data: scanned } = await supabase
       .from('attendees')
-      .select('id, event_id')
-      .eq('qr_token', scanned_qr_token)
-      .single();
+      .select('id, event_id, name')
+      .eq('qr_token', token)
+      .maybeSingle();
 
-    if (!scanner || !scanned) throw new Error('Attendee not found');
-    if (scanner.event_id !== scanned.event_id) throw new Error('Different events');
-    if (scanner.id === scanned.id) throw new Error('Cannot connect with yourself');
+    if (!scanned) throw new Error('INVALID_QR');
+    if (scanner.event_id !== scanned.event_id) throw new Error('DIFFERENT_EVENT');
+    if (scanner.id === scanned.id) throw new Error('CANNOT_CONNECT_SELF');
 
     const [a, b] = [scanner.id, scanned.id].sort();
 
@@ -41,7 +40,7 @@ Deno.serve(async (req) => {
 
     if (existing) {
       return new Response(
-        JSON.stringify({ ok: true, connection_id: existing.id, already: true }),
+        JSON.stringify({ ok: true, connection_id: existing.id, already: true, name: scanned.name }),
         { headers: { ...corsHeaders, 'content-type': 'application/json' } },
       );
     }
@@ -59,12 +58,14 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     return new Response(
-      JSON.stringify({ ok: true, connection_id: row.id, already: false }),
+      JSON.stringify({ ok: true, connection_id: row.id, already: false, name: scanned.name }),
       { headers: { ...corsHeaders, 'content-type': 'application/json' } },
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
+    const msg = String(err instanceof Error ? err.message : err);
+    const status = msg === 'UNAUTHENTICATED' ? 401 : msg === 'NOT_AN_ATTENDEE' ? 403 : 400;
+    return new Response(JSON.stringify({ error: msg }), {
+      status,
       headers: { ...corsHeaders, 'content-type': 'application/json' },
     });
   }

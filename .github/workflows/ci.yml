@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint . --max-warnings 200
+
+      - name: Demo mode must never reach production builds
+        run: |
+          if grep -q "EXPO_PUBLIC_DEMO_MODE" eas.json; then
+            echo "::error::EXPO_PUBLIC_DEMO_MODE found in eas.json — demo mode must not be configured in build profiles"
+            exit 1
+          fi
+          echo "demo-mode guard passed"
+
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Unit tests (push eligibility, priority)
+        run: deno test --no-check=remote supabase/functions/tests/
+
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install admin dependencies
+        working-directory: admin
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck admin
+        working-directory: admin
+        run: npx tsc --noEmit

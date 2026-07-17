@@ -1,4 +1,4 @@
-import { View, Image, Pressable, Linking } from 'react-native';
+import { View, Pressable, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 
@@ -56,7 +57,15 @@ export default function SpeakerDetail() {
         await supabase.from('speaker_followers').insert({ speaker_id: id, attendee_id: attendeeId });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['follows-speaker', id, attendeeId] }),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['follows-speaker', id, attendeeId] });
+      const prev = qc.getQueryData(['follows-speaker', id, attendeeId]);
+      qc.setQueryData(['follows-speaker', id, attendeeId], !isFollowing);
+      return { prev };
+    },
+    onError: (_e: unknown, _v: void, ctx: any) =>
+      qc.setQueryData(['follows-speaker', id, attendeeId], ctx?.prev),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['follows-speaker', id, attendeeId] }),
   });
 
   if (!speaker) return null;
@@ -64,13 +73,13 @@ export default function SpeakerDetail() {
   return (
     <Screen>
       <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={28} color="#04072F" />
       </Pressable>
 
       <View className="items-center mt-4">
         <View className="bg-cloud rounded-full p-1">
           {speaker.headshot_url ? (
-            <Image source={{ uri: speaker.headshot_url }} className="w-40 h-40 rounded-full" />
+            <Photo uri={speaker.headshot_url} width={320} className="w-40 h-40 rounded-full" />
           ) : (
             <View className="w-40 h-40 rounded-full bg-cloud items-center justify-center">
               <Ionicons name="person" size={64} color="#04072F" />
@@ -79,7 +88,7 @@ export default function SpeakerDetail() {
         </View>
         <T variant="h1" className="mt-4 text-center">{speaker.name}</T>
         {(speaker.title || speaker.company) && (
-          <T variant="body" className="mt-1 text-cloud/80 text-center">
+          <T variant="body" className="mt-1 text-ink-soft text-center">
             {[speaker.title, speaker.company].filter(Boolean).join(' · ')}
           </T>
         )}
@@ -107,7 +116,7 @@ export default function SpeakerDetail() {
       {speaker.bio && (
         <View className="mt-8">
           <T variant="sub">About</T>
-          <T variant="body" className="mt-2 text-cloud/90">{speaker.bio}</T>
+          <T variant="body" className="mt-2 text-ink-soft">{speaker.bio}</T>
         </View>
       )}
 
@@ -118,7 +127,7 @@ export default function SpeakerDetail() {
             {speaker.sessions.map((row: any) =>
               row.session ? (
                 <Card key={row.session.id} onPress={() => router.push(`/session/${row.session.id}`)}>
-                  <T variant="caption" className="normal-case tracking-normal text-earth">
+                  <T variant="caption" className="normal-case tracking-normal text-cta-deep">
                     {new Date(row.session.start_at).toLocaleString()}
                     {row.session.room ? ` · ${row.session.room}` : ''}
                   </T>

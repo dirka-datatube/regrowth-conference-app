@@ -1,4 +1,4 @@
-import { View, Pressable, Share } from 'react-native';
+import { View, Pressable, Share, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,15 +43,15 @@ export default function NoteDetail() {
     <Screen>
       <View className="flex-row items-center justify-between pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <Pressable onPress={share} hitSlop={10}>
-          <Ionicons name="share-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="share-outline" size={24} color="#04072F" />
         </Pressable>
       </View>
 
       {session && (
-        <T variant="caption" className="text-earth normal-case tracking-normal mt-4">
+        <T variant="caption" className="text-cta-deep normal-case tracking-normal mt-4">
           {session.title}
         </T>
       )}
@@ -64,7 +64,7 @@ export default function NoteDetail() {
       {data.ai_summary && (
         <View className="mt-6">
           <T variant="sub">AI summary</T>
-          <Card className="mt-3" variant="earth">
+          <Card className="mt-3" variant="feature">
             <T variant="body">{data.ai_summary}</T>
           </Card>
         </View>
@@ -74,14 +74,31 @@ export default function NoteDetail() {
         <View className="mt-6">
           <T variant="sub">Follow-up questions</T>
           <Card className="mt-3">
-            {data.follow_up_questions.map((q, i) => (
+            {data.follow_up_questions.map((q: string, i: number) => (
               <T variant="body" key={i} className={i > 0 ? 'mt-2' : ''}>• {q}</T>
             ))}
           </Card>
         </View>
       )}
 
-      <View className="mt-8">
+      <View className="mt-8 gap-y-3">
+        <Button
+          label="Email me these notes"
+          variant="secondary"
+          onPress={async () => {
+            const { data: res, error } = await supabase.functions.invoke('ac-event-emit', {
+              body: {
+                event_name: 'notes_export',
+                event_data: { session: session?.title, body: data.body, summary: data.ai_summary },
+              },
+            });
+            if (error || res?.error) {
+              Alert.alert('Hmm', 'We could not send that just now — try the share button instead.');
+            } else {
+              Alert.alert('On its way', 'Your notes will land in your inbox shortly.');
+            }
+          }}
+        />
         <Button
           label="Edit notes"
           variant="ghost"

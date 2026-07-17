@@ -38,7 +38,7 @@ export default function Login() {
       <View className="pt-8">
         <T variant="caption">Sign in</T>
         <T variant="h1" className="mt-3">Let's get you in</T>
-        <T variant="body" className="mt-3 text-cloud/80">
+        <T variant="body" className="mt-3 text-ink-soft">
           Use the email you registered with. We'll send you a link to tap.
         </T>
 
@@ -51,8 +51,8 @@ export default function Login() {
             autoCorrect={false}
             keyboardType="email-address"
             placeholder="you@regrowth.au"
-            placeholderTextColor="#8A8DA6"
-            className="bg-snow/5 border border-snow/15 rounded-card px-4 py-4 text-snow font-body text-body"
+            placeholderTextColor="#8B8EA6"
+            className="bg-surface border border-line rounded-card px-4 py-4 text-ink font-body text-body"
           />
         </View>
 

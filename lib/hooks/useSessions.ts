@@ -42,6 +42,30 @@ export function useMySchedule() {
   });
 }
 
+// The attendee's next picked sessions — Home's "your day at a glance" strip.
+export function useMyUpcoming(limit = 3) {
+  const attendeeId = useAppStore((s) => s.attendee?.id);
+  return useQuery({
+    queryKey: ['my-upcoming', attendeeId],
+    enabled: !!attendeeId,
+    refetchInterval: 1000 * 60 * 5,
+    queryFn: async () => {
+      if (IS_DEMO) return demoSessions.slice(0, 2);
+      const { data, error } = await supabase
+        .from('schedule_picks')
+        .select('session:sessions(id, title, room, start_at, end_at, type)')
+        .eq('attendee_id', attendeeId!);
+      if (error) throw error;
+      const now = Date.now();
+      return (data ?? [])
+        .map((r: any) => r.session)
+        .filter((s: any) => s && new Date(s.end_at).getTime() > now)
+        .sort((a: any, b: any) => +new Date(a.start_at) - +new Date(b.start_at))
+        .slice(0, limit);
+    },
+  });
+}
+
 export function useHappeningNow() {
   const eventId = useAppStore((s) => s.attendee?.event_id);
   return useQuery({

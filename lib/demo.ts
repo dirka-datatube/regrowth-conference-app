@@ -5,7 +5,6 @@
 import type {
   Attendee,
   Speaker,
-  Session,
   Partner,
   Faq,
   AuctionItem,
@@ -198,7 +197,7 @@ export const demoAuction: AuctionItem[] = [
   },
 ];
 
-export const demoNotes: Array<Note & { session: { id: string; title: string; start_at: string } | null }> = [
+export const demoNotes: (Note & { session: { id: string; title: string; start_at: string } | null })[] = [
   {
     id: 'n1', attendee_id: ME_ID, session_id: 'sess1',
     body: 'Key idea: we win when we show up consistently for our team.',
@@ -210,7 +209,7 @@ export const demoNotes: Array<Note & { session: { id: string; title: string; sta
   },
 ];
 
-export const demoQuestions: Array<Question & { attendee: { name: string } | null }> = [
+export const demoQuestions: (Question & { attendee: { name: string } | null })[] = [
   {
     id: 'q1', event_id: EVENT_ID, session_id: null, speaker_id: null,
     attendee_id: 'a2', body: 'What\'s the one thing top performers are doing differently in 2026?',

@@ -1,10 +1,11 @@
-import { View, Image, Pressable, Linking, Alert } from 'react-native';
+import { View, Pressable, Linking, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { T } from '@/components/Type';
 import { Button } from '@/components/Button';
+import { Photo } from '@/components/Photo';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 
@@ -69,26 +70,26 @@ export default function PartnerDetail() {
   return (
     <Screen>
       <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={28} color="#04072F" />
       </Pressable>
 
       {partner.logo_url && (
         <View className="bg-cloud rounded-card mt-4 p-6 items-center">
-          <Image source={{ uri: partner.logo_url }} className="w-40 h-24" resizeMode="contain" />
+          <Photo uri={partner.logo_url} width={320} contentFit="contain" className="w-40 h-24" />
         </View>
       )}
 
       <View className="mt-6">
         <T variant="h1">{partner.name}</T>
         {partner.description && (
-          <T variant="body" className="mt-3 text-cloud/90">{partner.description}</T>
+          <T variant="body" className="mt-3 text-ink-soft">{partner.description}</T>
         )}
       </View>
 
       {partner.solutions_content && (
         <View className="mt-6">
           <T variant="sub">Solutions for your business</T>
-          <T variant="body" className="mt-2 text-cloud/90">{partner.solutions_content}</T>
+          <T variant="body" className="mt-2 text-ink-soft">{partner.solutions_content}</T>
         </View>
       )}
 

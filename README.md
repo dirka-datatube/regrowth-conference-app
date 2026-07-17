@@ -200,10 +200,20 @@ Track these in the project tracker — they block content load, not engineering:
 
 ---
 
-## Admin panel (Lovable)
+## Admin panel
 
-The admin panel is a separate Next.js project. It connects to the same
-Supabase project and bypasses RLS via a service-role key (server-side only).
-See `supabase/migrations/20260101000000_initial_schema.sql` for the schema
-the admin will write against, and the `is_admin_for(event_id)` helper for
-the RLS rules to mirror. Admin-only tables: `admin_users`, `audit_log`.
+Lives in [`admin/`](admin/) — a Next.js 14 app against the same Supabase
+project. It authenticates admins via magic link (`admin_users` gate) and does
+**all writes through RLS as the signed-in admin** — no service-role key in
+the browser, every mutation audit-logged.
+
+```bash
+cd admin
+cp .env.example .env.local
+npm install && npm run dev   # http://localhost:3000
+```
+
+Deploy to Vercel with the three `NEXT_PUBLIC_*` env vars, then add the
+deployed URL to Supabase Auth redirect URLs.
+
+Operations guide for event day: [`docs/runbook.md`](docs/runbook.md).

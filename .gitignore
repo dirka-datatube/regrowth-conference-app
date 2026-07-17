@@ -48,3 +48,8 @@ supabase/.temp/
 
 # Sentry
 .sentryclirc
+
+# Next.js (admin panel)
+admin/.next/
+admin/out/
+admin/tsconfig.tsbuildinfo

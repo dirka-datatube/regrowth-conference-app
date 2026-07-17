@@ -1,19 +1,18 @@
-import { Pressable, View, ActivityIndicator, PressableProps } from 'react-native';
-import { T } from './Type';
+import { Pressable, ActivityIndicator, PressableProps, Text } from 'react-native';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const bg: Record<Variant, string> = {
-  primary: 'bg-earth',
-  secondary: 'bg-ocean',
-  ghost: 'bg-transparent border border-cloud/30',
+  primary: 'bg-cta',
+  secondary: 'bg-accent',
+  ghost: 'bg-transparent border border-line',
   danger: 'bg-danger',
 };
 
 const fg: Record<Variant, string> = {
   primary: 'text-snow',
   secondary: 'text-snow',
-  ghost: 'text-snow',
+  ghost: 'text-ink',
   danger: 'text-snow',
 };
 
@@ -37,17 +36,18 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      className={`${bg[variant]} ${fullWidth ? 'w-full' : ''} rounded-pill py-4 px-6 items-center justify-center ${isDisabled ? 'opacity-50' : ''}`}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
+      className={`${bg[variant]} ${fullWidth ? 'w-full' : ''} rounded-pill py-4 px-6 items-center justify-center ${isDisabled ? 'opacity-50' : 'active:opacity-80 active:scale-[0.99]'}`}
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color="#FFFFFF" />
+        <ActivityIndicator color={variant === 'ghost' ? '#04072F' : '#FFFFFF'} />
       ) : (
-        <View>
-          <T variant="body" className={`${fg[variant]} font-sub uppercase tracking-widest text-small`}>
-            {label}
-          </T>
-        </View>
+        <Text className={`${fg[variant]} font-sub uppercase tracking-widest text-small`}>
+          {label}
+        </Text>
       )}
     </Pressable>
   );

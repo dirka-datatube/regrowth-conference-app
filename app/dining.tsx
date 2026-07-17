@@ -33,7 +33,7 @@ export default function Dining() {
     <Screen>
       <View className="flex-row items-center pt-2">
         <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={28} color="#04072F" />
         </Pressable>
         <T variant="caption" className="ml-2">Dining experience</T>
       </View>
@@ -43,21 +43,21 @@ export default function Dining() {
         <Card className="mt-4">
           <T variant="caption">Your dietary requirements</T>
           <T variant="body" className="mt-1">{me.dietary}</T>
-          <T variant="small" className="mt-2 text-cloud/70">
+          <T variant="small" className="mt-2 text-ink-faint">
             Already on file from your registration. Let us know if anything's changed.
           </T>
         </Card>
       )}
 
       <View className="mt-6 gap-y-3">
-        {meals?.map((m) => (
+        {meals?.map((m: any) => (
           <Card key={m.id}>
-            <T variant="caption" className="normal-case tracking-normal text-earth">
+            <T variant="caption" className="normal-case tracking-normal text-cta-deep">
               {new Date(m.start_at).toLocaleString()}
             </T>
             <T variant="h3" className="mt-1">{m.title}</T>
             {m.room && <T variant="small" className="mt-1">{m.room}</T>}
-            {m.abstract && <T variant="body" className="mt-2 text-cloud/80">{m.abstract}</T>}
+            {m.abstract && <T variant="body" className="mt-2 text-ink-soft">{m.abstract}</T>}
           </Card>
         ))}
       </View>

@@ -202,22 +202,42 @@ rewrite.
 | --- | --- | --- |
 | Push notifications | Full (Expo Push, already built) | iOS Safari requires add-to-home-screen before web push works at all |
 | Session reminders | Works | Depends on the above |
-| Geofence check-in | Works | Not available |
-| QR scanning | Reliable (`expo-camera`) | `getUserMedia`, workable but less reliable |
-| Mic record (#30) | Straightforward | `MediaRecorder` — good on Android Chrome, patchy on iOS Safari |
+| Background audio recording | Records with the phone locked | Stops when the browser is backgrounded or the screen locks |
+| Geofence check-in | Works | Not available — no background geolocation on the web |
+| Offline write queue | Works | Background Sync API unsupported in Safari; cached *content* is fine |
+| QR scanning | Reliable (`expo-camera`) | Solved by encoding a URL — see below |
+| Business-card capture | `expo-camera` | `<input capture>` still-photo — arguably more reliable than native streaming |
 | App Store fee | Annual renewal | None |
 | Install friction | The stated objection | None |
 
-The trade to put in writing: **a mobile website removes the download barrier but
-takes push notifications with it.** Session reminders are the single most-used
-feature of a conference app, and they are already built and in the current
-Definition of Done. iOS web push only works once the user adds the site to their
-home screen — which reintroduces an install step, just a less familiar one than the
-App Store.
+**QR check-in is not a reason to go native.** The QR currently encodes a raw
+`qr_token`. Encode a URL instead — `https://app.regrowth.au/c/<token>` — and the
+phone's built-in camera app scans it, with no browser camera permission involved
+at all. That covers attendee-to-attendee connect and sponsor booth check-in
+outright. Door check-in runs on two to four staff devices under our control, so it
+can use whatever works, with manual name search as the fallback that is needed
+regardless. In-browser scanning is available if wanted (`getUserMedia` plus
+`BarcodeDetector`, falling back to a WASM decoder outside Chrome), but it is a UX
+nicety rather than a functional requirement.
+
+**The two real casualties are push notifications and background audio recording.**
+
+Session reminders are the single most-used feature of a conference app, they are
+already built, and they are in the current Definition of Done. iOS web push only
+works once the user adds the site to their home screen — which reintroduces an
+install step, just a less familiar one than the App Store.
+
+Background recording is the sharper problem, and it lands on a *confirmed*
+deliverable. `MediaRecorder` stops when the browser is backgrounded or the screen
+locks on iOS, so AI note-taking in a PWA requires the attendee to hold the phone
+awake, app in front, for the whole session. That is not usable for a 45-minute
+keynote. A native app records with the phone in a pocket.
 
 There is a third option worth pricing: **mobile website as the primary surface,
-plus a thin native wrapper** for attendees who want reminders. It costs more than
-either single option but keeps both properties.
+plus a thin native wrapper** for attendees who want reminders and session
+recording. It costs more than either single option but keeps both properties, and
+the background-recording constraint argues for it more strongly than the camera
+question ever did.
 
 Note also that if delivery is web-only, the Stripe-on-website rationale ("avoids
 Apple's cut") no longer applies — payment could sit anywhere. Keeping it on the

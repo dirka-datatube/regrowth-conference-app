@@ -19,6 +19,7 @@ export const IS_DEMO = process.env.EXPO_PUBLIC_DEMO_MODE === 'true';
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
 const ME_ID = '11111111-1111-1111-1111-111111111111';
+const STUDY_TOUR_ID = '00000000-0000-0000-0000-000000000002';
 
 export const demoAttendee: Attendee = {
   id: ME_ID,
@@ -198,15 +199,65 @@ export const demoAuction: AuctionItem[] = [
   },
 ];
 
+export const demoEvents = [
+  {
+    id: EVENT_ID,
+    name: 'Navigate 2027',
+    subtitle: 'REGROWTH Annual Conference',
+    start_date: '2027-03-11',
+    end_date: '2027-03-13',
+    venue: 'ICC Sydney',
+    hero_url: null,
+  },
+  {
+    id: STUDY_TOUR_ID,
+    name: 'Study Tour',
+    subtitle: 'REGROWTH Study Tour',
+    start_date: '2027-06-02',
+    end_date: '2027-06-09',
+    venue: 'Melbourne',
+    hero_url: null,
+  },
+];
+
 export const demoNotes: Array<Note & { session: { id: string; title: string; start_at: string } | null }> = [
   {
-    id: 'n1', attendee_id: ME_ID, session_id: 'sess1',
-    body: 'Key idea: we win when we show up consistently for our team.',
+    id: 'n1', attendee_id: ME_ID, session_id: 'sess1', event_id: EVENT_ID,
+    title: 'Consistency beats intensity',
+    pinned: true, important: true, reminder_at: at(1, 9),
+    body: 'Key idea: we win when we show up consistently for our team. The panel kept coming back to rhythm over heroics — weekly one-on-ones that never move, a Monday number everyone can recite, and a follow-up habit that survives a bad week.',
     ai_summary: 'A reflection on consistency, leadership, and building trust within real estate teams.',
     ai_summary_generated_at: new Date().toISOString(),
     follow_up_questions: ['How do we measure consistency?', 'What does showing up look like in practice?'],
     created_at: '', updated_at: new Date().toISOString(),
     session: { id: 'sess1', title: 'Welcome to REGROWTH 2026', start_at: at(0, 9) },
+  },
+  {
+    id: 'n2', attendee_id: ME_ID, session_id: null, event_id: EVENT_ID,
+    title: 'Referral loop worth stealing',
+    pinned: false, important: true, reminder_at: null,
+    body: 'Ask for the referral at the appraisal, not at settlement. By settlement the emotional peak has passed and the vendor has moved on. Worth testing across the office next quarter and measuring conversion either side.',
+    ai_summary: null, ai_summary_generated_at: null, follow_up_questions: [],
+    created_at: '', updated_at: at(0, 14),
+    session: null,
+  },
+  {
+    id: 'n3', attendee_id: ME_ID, session_id: null, event_id: STUDY_TOUR_ID,
+    title: 'Melbourne office fit-out',
+    pinned: false, important: false, reminder_at: at(2, 10),
+    body: 'The open plan works because the meeting rooms are glass and bookable from a phone. No hot desking for agents — they keep a fixed desk, which is what kept retention up after the move.',
+    ai_summary: null, ai_summary_generated_at: null, follow_up_questions: [],
+    created_at: '', updated_at: at(-1, 16),
+    session: null,
+  },
+  {
+    id: 'n4', attendee_id: ME_ID, session_id: 'sess2', event_id: EVENT_ID,
+    title: 'Question for the closing panel',
+    pinned: false, important: false, reminder_at: null,
+    body: 'What is the first thing you cut when the market turns, and what did cutting it cost you the following year?',
+    ai_summary: null, ai_summary_generated_at: null, follow_up_questions: [],
+    created_at: '', updated_at: at(-1, 11),
+    session: { id: 'sess2', title: 'Closing panel', start_at: at(1, 16) },
   },
 ];
 

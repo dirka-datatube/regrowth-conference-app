@@ -7,6 +7,22 @@
 
 **Decisions log:**
 - 2026-07-17 — Brand font licensing **deferred**; shipping iOS built-in fallbacks (Georgia / Snell Roundhand / Helvetica Neue), mapped in `tailwind.config.js`.
+- 2026-08-18 — **Delivery is a PWA, not a native iOS app.** The App Store
+  download was the stated barrier to entry. Consequences: web push requires
+  add-to-home-screen on iOS, background audio capture stops when the screen
+  locks, and geofence check-in is unavailable. See
+  [`SPEC-V3-GAP-ANALYSIS.md`](SPEC-V3-GAP-ANALYSIS.md) §4.
+- 2026-08-18 — **The Figma file is the design of record** (`NEW: Event App`,
+  `A8G0Lx1Uflhrl4uaqB2QLV`). It settles the IA at **six bottom tabs** — Home ·
+  Alerts · Events · Insights · Connect · Me — and defines **Insights as the
+  event notes library**. Feedback (Polls & Surveys) is dropped from the nav and
+  remains an open decision.
+- 2026-08-18 — NativeWind pinned to `4.1.23`. `^4.1.10` had drifted to 4.2.6,
+  whose babel preset requires `react-native-worklets/plugin` (reanimated 4)
+  while Expo SDK 51 pins reanimated 3 — this broke the web build outright.
+- 2026-08-18 — Web export switched to `output: "single"` (SPA). The app is
+  entirely behind a login so prerendering buys no SEO, and Supabase auth touches
+  `window.localStorage` at module load, which crashes a Node prerender pass.
 
 ---
 
@@ -102,6 +118,7 @@ cadence: 2 weeks each, ~10 working days. Solo-developer-plus-agent friendly.
 | 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | QR connect, business-card OCR, AI note summaries, moderated Q&A all work end-to-end | §10.3, §10.4, §10.5 |
 | 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | Session reminders arrive on time; check-in works 3 ways; auction is race-safe & realtime | §10.6, §10.8 |
 | 5 | [Hardening & TestFlight launch](sprints/sprint-05-hardening-and-testflight.md) | Security/perf audit passed, observability live, TestFlight external build in Kylie's hands, event-day runbook | all of §10 verified |
+| 6 | [PWA delivery & design rollout](sprints/sprint-06-pwa-and-design-rollout.md) | Six-tab IA and the Figma design language shipped; installable PWA builds and boots | supersedes the native/TestFlight tasks in 1–5 |
 
 ## 3. How to run a sprint with an AI agent
 

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "REGROWTH Conference",
+    "name": "REGROWTH Events",
     "slug": "regrowth-conference-app",
     "scheme": "regrowth",
     "version": "0.1.0",
@@ -22,7 +22,9 @@
         "NSLocationWhenInUseUsageDescription": "We use your location to check you into the venue and surface what's happening near you.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": ["applinks:regrowth.au"]
+      "associatedDomains": [
+        "applinks:regrowth.au"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +35,16 @@
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/favicon.png"
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "REGROWTH Events",
+      "shortName": "REGROWTH",
+      "themeColor": "#04072F",
+      "backgroundColor": "#04072F",
+      "display": "standalone",
+      "orientation": "portrait",
+      "lang": "en-AU",
+      "startUrl": "/?source=pwa"
     },
     "plugins": [
       "expo-router",

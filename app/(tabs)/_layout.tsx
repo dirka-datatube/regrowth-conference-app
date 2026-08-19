@@ -1,11 +1,21 @@
 import { Redirect, Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { useAttendee } from '@/lib/hooks/useAttendee';
 import { registerForPush } from '@/lib/push';
 import { IS_DEMO } from '@/lib/demo';
+import { TabBar } from '@/components/TabBar';
 
+/**
+ * Bottom navigation — six tabs, per the Figma file (2026-08).
+ *
+ * Spec v3 listed seven destinations against a stated cap of five; the design
+ * resolves that to six by dropping Feedback (Polls & Surveys), which now has
+ * no home. Tracked as an open decision in docs/SPEC-V3-GAP-ANALYSIS.md §7 —
+ * either accept six or fold Feedback into Insights.
+ *
+ * Order is fixed by the design: Home · Alerts · Events · Insights · Connect · Me.
+ */
 export default function TabsLayout() {
   const session = useAppStore((s) => s.session);
   const { data: attendee } = useAttendee();
@@ -20,53 +30,13 @@ export default function TabsLayout() {
   if (!session && !IS_DEMO) return <Redirect href="/(auth)/welcome" />;
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#04072F',
-          borderTopColor: '#1a1d3d',
-          height: 84,
-          paddingTop: 8,
-          paddingBottom: 24,
-        },
-        tabBarActiveTintColor: '#D17F5D',
-        tabBarInactiveTintColor: '#8A8DA6',
-        tabBarLabelStyle: {
-          fontSize: 11,
-          letterSpacing: 1,
-          textTransform: 'uppercase',
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="agenda"
-        options={{
-          title: 'Agenda',
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notes"
-        options={{
-          title: 'Event Notes',
-          tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" size={size} color={color} />,
-        }}
-      />
+    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="alerts" options={{ title: 'Alerts' }} />
+      <Tabs.Screen name="events" options={{ title: 'Events' }} />
+      <Tabs.Screen name="insights" options={{ title: 'Insights' }} />
+      <Tabs.Screen name="connect" options={{ title: 'Connect' }} />
+      <Tabs.Screen name="me" options={{ title: 'Me' }} />
     </Tabs>
   );
 }

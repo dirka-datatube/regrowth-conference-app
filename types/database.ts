@@ -180,6 +180,12 @@ export type Note = {
   id: string;
   attendee_id: string;
   session_id: string | null;
+  // Insights fields — migration 20260818000000_insights_notes
+  title: string | null;
+  event_id: string | null;
+  pinned: boolean;
+  important: boolean;
+  reminder_at: string | null;
   body: string;
   ai_summary: string | null;
   ai_summary_generated_at: string | null;

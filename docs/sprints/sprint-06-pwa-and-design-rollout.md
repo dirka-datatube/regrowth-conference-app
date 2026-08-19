@@ -30,14 +30,14 @@ notifications and background audio capture behave differently.
 | --- | --- |
 | What is "Insights"? | The event **notes** library — All / Recently Viewed / Pinned, search with voice input, note cards tagged by event with Important + Reminder flags and a pin. |
 | How many bottom tabs? | **Six**: Home · Alerts · Events · Insights · Connect · Me. |
-| What happened to Feedback? | **Dropped.** Polls & Surveys have no home in the design. Still an open decision — accept six tabs, or fold Feedback into Insights. |
+| What happened to Feedback? | **Dropped.** Polls & Surveys have no home in the design. **Resolved 2026-08-19: six tabs stand.** When polling is built it needs a non-tab home, not a seventh tab. |
 | Where does the "+" go? | Bottom-right of Insights. Spec v3 supersedes the plain "+" with camera/video + mic capture. |
 
 It also raises three things nobody has priced:
 
-- **"NAVIGATE 2027"** on the Events hero and the note tags, against a repo
-  seeded with "REGROWTH Annual Conference 2026" and a Nov 2026 go-live. Which
-  event is v1 for?
+- ~~**"NAVIGATE 2027"** vs the repo's seeded 2026 event.~~ **Resolved
+  2026-08-19: 2027 is correct.** Migration `20260819000000` renames the live
+  event and adds the Study Tour as the second product.
 - **"Beyond Events — Courses, Workshops & Programs"**, a third product category
   beyond Navigate and the Study Tour.
 - A **Customer Support screen** that appears in no version of the spec.
@@ -54,7 +54,7 @@ It also raises three things nobody has priced:
 | Insights | Built to the comp — filters, search + mic, glass note cards with tag/important/reminder meta, pin, capture FAB. |
 | Events | Built to the comp — welcome copy, snapping event carousel, Get Started, Beyond Events row. |
 | Connect / Me | Built in the design language (their Figma frames are empty shells). `Me` lists CPD records and event resources as visibly disabled rather than hiding the gap. |
-| Schema | `20260818000000_insights_notes.sql` — notes gain `title`, `event_id`, `pinned`, `important`, `reminder_at`, with backfills and indexes. |
+| Schema | `20260818000000_insights_notes.sql` — notes gain `title`, `event_id`, `pinned`, `important`, `reminder_at`, with backfills and indexes. `20260819000000_navigate_2027_and_study_tour.sql` — renames the live event to **Navigate 2027** and inserts **REGROWTH Study Tour 2027** as the second product. |
 | PWA | `public/manifest.json`, `public/sw.js` (shell + asset caching, web push, notification click-through), `lib/pwa.ts`, `components/InstallPrompt.tsx`, `scripts/pwa-head.mjs`, `npm run build:web`. |
 | Capability gating | `lib/capture.ts` — `canRecordInBackground()`, `isInstalledPwa()`, `isInAppBrowser()`. The capture menu hides what the host cannot do. |
 | Build fixes | NativeWind pinned to `4.1.23` (4.2.6's babel preset requires reanimated 4 and broke the web build); `reanimated: false` on `babel-preset-expo`; web output switched to `single`; placeholder app icons generated. |
@@ -121,7 +121,8 @@ Connect and Me. Decide whether it survives.
 - Native wrapper, EAS, TestFlight, App Store. Only in scope if the hybrid
   option in `docs/SPEC-V3-GAP-ANALYSIS.md` §4 is bought.
 - Stripe, discount codes, refer-a-friend, Squarespace.
-- Polls & surveys — no home in the IA until the Feedback decision is made.
+- Polls & surveys. Six tabs are now fixed, so these need a non-tab home
+  (under a session, or under Events) before they can be built.
 - Sponsor booth check-in, gamification, analytics dashboard, CPD, booklets,
   past-event video.
 - Study Tour as a fully separate product. The Events carousel lists it; none of
@@ -129,10 +130,21 @@ Connect and Me. Decide whether it survives.
 
 ---
 
-## 6. Decisions still needed
+## 6. Decisions
 
-1. Six tabs, or fold Feedback in to keep the cap at five?
-2. Navigate **2027** or 2026 for v1?
-3. Is "Beyond Events" in scope?
-4. Does the hybrid native wrapper get bought — i.e. do we keep push and
-   background recording?
+**Resolved 2026-08-19**
+
+1. ~~Six tabs, or fold Feedback in?~~ **Six tabs stand.** Polls & Surveys will
+   need a non-tab home when they are built.
+2. ~~Navigate 2027 or 2026 for v1?~~ **2027.** Applied in migration
+   `20260819000000`, `seed.sql` and the demo fixtures.
+
+**Still open**
+
+3. Is "Beyond Events" (Courses, Workshops & Programs) in scope? It is in the
+   design and in no version of the spec. The Events screen currently routes it
+   at `/solutions` as a placeholder.
+4. Does the hybrid native wrapper get bought — i.e. do we keep push
+   notifications and background audio recording? This is the expensive one and
+   it still blocks AI note-taking, which is a confirmed deliverable.
+5. Where do Polls & Surveys live, now that six tabs are fixed?

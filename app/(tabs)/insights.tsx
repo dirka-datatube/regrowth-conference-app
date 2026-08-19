@@ -14,7 +14,7 @@ import { Fab, type CaptureMode } from '@/components/Fab';
 import { EmptyState } from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
-import { IS_DEMO, demoNotes } from '@/lib/demo';
+import { IS_DEMO, demoNotes, demoEvents } from '@/lib/demo';
 import { canRecordInBackground } from '@/lib/capture';
 import type { Note } from '@/types/database';
 
@@ -28,11 +28,21 @@ const FILTERS: { key: Filter; label: string }[] = [
 type NoteRow = Note & { event: { id: string; name: string } | null };
 
 /** Meta row under each note: event tag, Important, Reminder. */
-function Meta({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+function Meta({
+  icon,
+  label,
+  shrink,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  shrink?: boolean;
+}) {
   return (
-    <View className="flex-row items-center gap-x-1.5">
+    <View className={`flex-row items-center gap-x-1.5 ${shrink ? 'shrink' : ''}`}>
       <Ionicons name={icon} size={12} color="#B9C0C9" />
-      <Text className="font-data text-meta text-snow">{label}</Text>
+      <Text className="font-data text-meta text-snow" numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -62,7 +72,7 @@ function NoteCard({ note, onTogglePin }: { note: NoteRow; onTogglePin?: () => vo
       </Text>
 
       <View className="mt-3 flex-row items-center gap-x-5">
-        {note.event?.name && <Meta icon="pricetag-outline" label={note.event.name} />}
+        {note.event?.name && <Meta icon="pricetag-outline" label={note.event.name} shrink />}
         {note.important && <Meta icon="filter-outline" label="Important" />}
         {note.reminder_at && <Meta icon="alarm-outline" label="Reminder" />}
       </View>
@@ -80,12 +90,10 @@ export default function Insights() {
     enabled: !!attendeeId || IS_DEMO,
     queryFn: async (): Promise<NoteRow[]> => {
       if (IS_DEMO) {
-        return demoNotes.map((n) => ({
-          ...n,
-          event: n.event_id
-            ? { id: n.event_id, name: n.event_id.endsWith('2') ? 'Study Tour' : 'Navigate 2027' }
-            : null,
-        })) as NoteRow[];
+        return demoNotes.map((n) => {
+          const ev = demoEvents.find((e) => e.id === n.event_id);
+          return { ...n, event: ev ? { id: ev.id, name: ev.name } : null };
+        }) as NoteRow[];
       }
       const { data, error } = await supabase
         .from('notes')

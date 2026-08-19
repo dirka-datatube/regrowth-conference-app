@@ -89,7 +89,7 @@ export const demoSpeakers: Speaker[] = [
 export const demoSessions = [
   {
     id: 'sess1', event_id: EVENT_ID,
-    title: 'Welcome to REGROWTH 2026',
+    title: 'Welcome to Navigate 2027',
     abstract: 'Kylie opens the conference with a vision for what we can build together.',
     start_at: at(0, 9), end_at: at(0, 10),
     room: 'Main Stage', type: 'keynote' as const, tags: [],
@@ -204,15 +204,15 @@ export const demoEvents = [
     id: EVENT_ID,
     name: 'Navigate 2027',
     subtitle: 'REGROWTH Annual Conference',
-    start_date: '2027-03-11',
-    end_date: '2027-03-13',
-    venue: 'ICC Sydney',
+    start_date: '2027-08-11',
+    end_date: '2027-08-13',
+    venue: 'Crown Towers, Perth',
     hero_url: null,
   },
   {
     id: STUDY_TOUR_ID,
-    name: 'Study Tour',
-    subtitle: 'REGROWTH Study Tour',
+    name: 'REGROWTH Study Tour 2027',
+    subtitle: 'A bespoke world-class client experience',
     start_date: '2027-06-02',
     end_date: '2027-06-09',
     venue: 'Melbourne',
@@ -230,7 +230,7 @@ export const demoNotes: Array<Note & { session: { id: string; title: string; sta
     ai_summary_generated_at: new Date().toISOString(),
     follow_up_questions: ['How do we measure consistency?', 'What does showing up look like in practice?'],
     created_at: '', updated_at: new Date().toISOString(),
-    session: { id: 'sess1', title: 'Welcome to REGROWTH 2026', start_at: at(0, 9) },
+    session: { id: 'sess1', title: 'Welcome to Navigate 2027', start_at: at(0, 9) },
   },
   {
     id: 'n2', attendee_id: ME_ID, session_id: null, event_id: EVENT_ID,
@@ -264,7 +264,7 @@ export const demoNotes: Array<Note & { session: { id: string; title: string; sta
 export const demoQuestions: Array<Question & { attendee: { name: string } | null }> = [
   {
     id: 'q1', event_id: EVENT_ID, session_id: null, speaker_id: null,
-    attendee_id: 'a2', body: 'What\'s the one thing top performers are doing differently in 2026?',
+    attendee_id: 'a2', body: 'What\'s the one thing top performers are doing differently in 2027?',
     anonymous: false, status: 'approved', upvotes: 24,
     answered_at: null, moderation_note: null, created_at: '',
     attendee: { name: 'James Patel' },

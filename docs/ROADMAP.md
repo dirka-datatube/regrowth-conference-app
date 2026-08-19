@@ -23,6 +23,14 @@
 - 2026-08-18 — Web export switched to `output: "single"` (SPA). The app is
   entirely behind a login so prerendering buys no SEO, and Supabase auth touches
   `window.localStorage` at module load, which crashes a Node prerender pass.
+- 2026-08-19 — **v1 targets Navigate 2027**, not 2026. The app goes live in
+  November 2026 and sells into the 2027 conference, which is what makes the
+  early-bird pricing in spec v3 meaningful. The live event row is renamed by
+  migration `20260819000000`, and the **REGROWTH Study Tour 2027** is inserted
+  as the second product.
+- 2026-08-19 — **Six bottom tabs stand.** Feedback (Polls & Surveys) stays out
+  of the nav. When polling is built it needs a non-tab home — most naturally
+  under a session or under Events — rather than a seventh tab.
 
 ---
 

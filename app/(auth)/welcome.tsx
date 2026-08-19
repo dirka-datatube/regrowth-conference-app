@@ -17,8 +17,8 @@ export default function Welcome() {
             we're glad you're here.
           </T>
           <T variant="body" className="mt-6 text-cloud/80">
-            Your personal companion for the REGROWTH Annual Conference. Your
-            schedule, your people, your moments — all in one place.
+            Your personal companion for Navigate and the REGROWTH Study Tour.
+            Your schedule, your people, your moments — all in one place.
           </T>
         </View>
 

@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoNotes, demoEvents } from '@/lib/demo';
-import { canRecordInBackground } from '@/lib/capture';
+import { canRecordInBackground, needsNativeApp, nativeAppLink } from '@/lib/capture';
 import type { Note } from '@/types/database';
 
 type Filter = 'all' | 'recent' | 'pinned';
@@ -128,6 +128,14 @@ export default function Insights() {
     router.push(mode === 'note' ? '/notes/new' : `/notes/new?capture=${mode}`);
   }
 
+  // Recording needs the native build to survive a locked screen. Rather than
+  // hiding it in the browser, send people to the app.
+  const recordingIsNativeOnly = needsNativeApp();
+
+  function onNeedsApp() {
+    router.push(nativeAppLink() as never);
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-midnight" edges={['top']}>
       <StatusBar style="light" />
@@ -151,8 +159,8 @@ export default function Insights() {
         <SearchField
           value={q}
           onChangeText={setQ}
-          onVoice={() => onCapture('voice')}
-          voiceAvailable={canRecordInBackground() !== 'unsupported'}
+          onVoice={() => (recordingIsNativeOnly ? onNeedsApp() : onCapture('voice'))}
+          voiceAvailable={canRecordInBackground() !== 'unsupported' || recordingIsNativeOnly}
         />
       </View>
 
@@ -176,7 +184,8 @@ export default function Insights() {
 
       <Fab
         onCapture={onCapture}
-        disabledModes={canRecordInBackground() === 'unsupported' ? ['voice', 'video'] : []}
+        nativeOnlyModes={recordingIsNativeOnly ? ['voice', 'video'] : []}
+        onNeedsApp={onNeedsApp}
       />
     </SafeAreaView>
   );

@@ -2,10 +2,11 @@
 
 **Status:** in progress
 **Opened:** 2026-08-18
-**Supersedes:** the native-app assumptions in sprints 01–05. Those sprints stay
-valid for backend, content pipeline, connections and hardening; every "App
-Store / TestFlight / EAS" task in them is now out of scope unless the hybrid
-wrapper is bought (see §5).
+**Supersedes:** the native-only assumptions in sprints 01–05. Those sprints stay
+valid for backend, content pipeline, connections and hardening. The "App Store /
+TestFlight / EAS" tasks in them are **back in scope** — the hybrid wrapper was
+bought on 2026-08-19 — but they now ship *after* the web surface rather than
+gating go-live.
 
 ---
 
@@ -110,6 +111,26 @@ in this sprint required temporarily hardcoding `IS_DEMO`.
 **Acceptance:** `npm run build:web` with the flag set produces a bundle that
 boots straight into the tabs.
 
+### 4.9 Native wrapper — config landed, build not yet run
+Bought 2026-08-19. What landed: `NSMicrophoneUsageDescription`,
+**`UIBackgroundModes: ["audio"]`** (the entitlement that lets recording survive
+a locked screen — the whole reason for the purchase), `remote-notification`,
+Android `RECORD_AUDIO` / `FOREGROUND_SERVICE_MICROPHONE` / `POST_NOTIFICATIONS`,
+the `expo-av` dependency and plugin, and `eas.json` with development/preview/
+production profiles.
+**Acceptance:** `eas build --profile preview` produces an installable iOS build;
+`Audio.setAudioModeAsync({ staysActiveInBackground: true })` is set at runtime;
+a recording started in-app survives locking the screen for ten minutes.
+**Blocked on:** the Apple Developer account, and a real EAS project id —
+`app.json` still carries `REPLACE_WITH_EAS_PROJECT_ID`.
+
+### 4.10 Two-surface messaging
+`/get-the-app` explains what each surface gives you; the Insights capture menu
+badges voice/video as "App" in the browser and routes there rather than hiding
+them.
+**Acceptance:** `NATIVE_APP.ios` / `.android` are populated once the listings
+exist, so the page offers a real link instead of "not released yet".
+
 ### 4.8 Delete or gate the drawer
 `app/menu.tsx` is the old twelve-item drawer. Its destinations now live under
 Connect and Me. Decide whether it survives.
@@ -118,8 +139,9 @@ Connect and Me. Decide whether it survives.
 
 ## 5. Out of scope
 
-- Native wrapper, EAS, TestFlight, App Store. Only in scope if the hybrid
-  option in `docs/SPEC-V3-GAP-ANALYSIS.md` §4 is bought.
+- Submitting to the App Store / Play Store. The wrapper is bought and the
+  config landed (§4.9), but store submission needs the Apple Developer account,
+  which is still an unresolved external dependency.
 - Stripe, discount codes, refer-a-friend, Squarespace.
 - Polls & surveys. Six tabs are now fixed, so these need a non-tab home
   (under a session, or under Events) before they can be built.
@@ -138,13 +160,18 @@ Connect and Me. Decide whether it survives.
    need a non-tab home when they are built.
 2. ~~Navigate 2027 or 2026 for v1?~~ **2027.** Applied in migration
    `20260819000000`, `seed.sql` and the demo fixtures.
+3. ~~Does the hybrid native wrapper get bought?~~ **Yes — push and recording
+   are wanted.** Platform config landed (§4.9); the recording implementation
+   itself is §4.4.
 
 **Still open**
 
 3. Is "Beyond Events" (Courses, Workshops & Programs) in scope? It is in the
    design and in no version of the spec. The Events screen currently routes it
    at `/solutions` as a placeholder.
-4. Does the hybrid native wrapper get bought — i.e. do we keep push
-   notifications and background audio recording? This is the expensive one and
-   it still blocks AI note-taking, which is a confirmed deliverable.
-5. Where do Polls & Surveys live, now that six tabs are fixed?
+4. Where do Polls & Surveys live, now that six tabs are fixed?
+5. **Does go-live on 16 Nov mean the web surface only?** Buying the wrapper
+   restores App Store review to the critical path, and the last working day
+   (Fri 13 Nov) is three days before go-live. Recommendation: ship the PWA on
+   16 Nov, follow with the app once review clears.
+6. Who owns the Apple Developer account? Still unresolved, and now blocking.

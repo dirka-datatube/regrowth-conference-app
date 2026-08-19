@@ -20,7 +20,12 @@
         "NSCameraUsageDescription": "We use the camera so you can scan attendee QR codes and capture business cards to grow your network.",
         "NSPhotoLibraryUsageDescription": "We use your photo library to add profile photos and event memories to your gallery.",
         "NSLocationWhenInUseUsageDescription": "We use your location to check you into the venue and surface what's happening near you.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "REGROWTH uses the microphone so you can record a session and get an AI summary of your notes.",
+        "UIBackgroundModes": [
+          "audio",
+          "remote-notification"
+        ]
       },
       "associatedDomains": [
         "applinks:regrowth.au"
@@ -31,7 +36,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#04072F"
       },
-      "package": "au.com.regrowth.conference"
+      "package": "au.com.regrowth.conference",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -53,6 +66,12 @@
         "expo-camera",
         {
           "cameraPermission": "REGROWTH uses the camera so you can scan attendee QR codes and capture business cards."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "REGROWTH uses the microphone so you can record a session and get an AI summary."
         }
       ],
       [

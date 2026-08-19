@@ -186,10 +186,25 @@ attribute, not a key — but it must be done before any AC work is priced as
 
 ---
 
-## 4. The platform question is the biggest decision in the SOW
+## 4. The platform question — RESOLVED
 
-The client has moved from a native app to a **strong preference for a mobile
-website**, and wants both costed separately.
+> **Decided 2026-08-19: the hybrid.** The mobile website is the primary
+> surface, and a thin native wrapper ships alongside it because push
+> notifications and session recording are both wanted. Priced as its own line
+> in SOW v3 — it is more than either single option, and it buys back the two
+> capabilities a browser cannot deliver.
+>
+> **Consequence the SOW must state:** this puts App Store review back on the
+> critical path, against a schedule whose last working day is Friday 13
+> November and whose go-live is Monday 16 November. The recommendation is to
+> **ship the web surface on 16 November and follow with the app**, rather than
+> gating go-live on store review. The Apple Developer account is still an
+> unresolved dependency and now blocks the app half.
+
+The analysis that led there follows.
+
+The client moved from a native app to a **strong preference for a mobile
+website**, and wanted both costed separately.
 
 **What transfers.** The app is Expo + `react-native-web`, so most of the 3,896
 lines across 33 screens — layout, navigation, data layer, Supabase client, brand
@@ -237,7 +252,7 @@ There is a third option worth pricing: **mobile website as the primary surface,
 plus a thin native wrapper** for attendees who want reminders and session
 recording. It costs more than either single option but keeps both properties, and
 the background-recording constraint argues for it more strongly than the camera
-question ever did.
+question ever did. — **This is the option that was bought.**
 
 Note also that if delivery is web-only, the Stripe-on-website rationale ("avoids
 Apple's cut") no longer applies — payment could sit anywhere. Keeping it on the
@@ -343,8 +358,10 @@ layer, and a possible change of delivery platform. Pricing it as a delta on SOW 
 
 ### Decisions from REGROWTH
 
-1. **App, mobile website, or both** — and written acceptance of the push
-   notification trade-off in §4.
+1. ~~**App, mobile website, or both**~~ — **RESOLVED 2026-08-19: the hybrid.**
+   Web is the primary surface; a native wrapper ships alongside for push and
+   recording. The SOW needs the wrapper as its own priced line, plus a stated
+   release plan (web on 16 Nov, app to follow).
 2. **Which five of the seven nav items** get bottom-tab slots. The spec lists seven
    against a stated cap of five.
 3. **What "Insights" contains.** Undefined in the spec.

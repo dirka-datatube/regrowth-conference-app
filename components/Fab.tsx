@@ -6,14 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
  * Capture button — bottom-right of Insights.
  *
  * The Figma frame shows a plain "+". Spec v3 (4 Aug) supersedes that: the "+"
- * is to be replaced by a camera/video toggle plus a microphone record button.
- * We keep the design's circular affordance and expand it into the three
- * capture modes on tap, so the visual language matches the file while the
- * behaviour matches the spec.
+ * is replaced by a camera/video toggle plus a microphone record button. We
+ * keep the design's circular affordance and expand it into the capture modes
+ * on tap, so the visual language matches the file while the behaviour matches
+ * the spec.
  *
- * `video` and `voice` are gated by the caller: on a PWA, MediaRecorder stops
- * when the browser is backgrounded or the screen locks, so long-session audio
- * capture is not offered unless the host can sustain it.
+ * Modes listed in `nativeOnlyModes` are still shown — with an "App" badge —
+ * rather than hidden. Since the hybrid native wrapper was bought (2026-08-19)
+ * there is somewhere to send people, so a browser user who wants to record a
+ * keynote gets told how, instead of finding a feature that silently isn't
+ * there.
  */
 
 export type CaptureMode = 'note' | 'photo' | 'video' | 'voice';
@@ -27,33 +29,48 @@ const ACTIONS: { mode: CaptureMode; icon: keyof typeof Ionicons.glyphMap; label:
 
 export function Fab({
   onCapture,
-  disabledModes = [],
+  nativeOnlyModes = [],
+  onNeedsApp,
 }: {
   onCapture: (mode: CaptureMode) => void;
-  disabledModes?: CaptureMode[];
+  /** Shown with an "App" badge; tapping calls onNeedsApp instead of onCapture. */
+  nativeOnlyModes?: CaptureMode[];
+  onNeedsApp?: (mode: CaptureMode) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const actions = ACTIONS.filter((a) => !disabledModes.includes(a.mode));
 
   return (
     <View className="absolute bottom-32 right-5 items-end gap-y-3">
       {open &&
-        actions.map((a) => (
-          <Pressable
-            key={a.mode}
-            accessibilityLabel={a.label}
-            onPress={() => {
-              setOpen(false);
-              onCapture(a.mode);
-            }}
-            className="flex-row items-center gap-x-3"
-          >
-            <Text className="font-ui text-tab text-snow">{a.label}</Text>
-            <View className="h-11 w-11 items-center justify-center rounded-pill bg-glass border border-glass-line">
-              <Ionicons name={a.icon} size={20} color="#FFFFFF" />
-            </View>
-          </Pressable>
-        ))}
+        ACTIONS.map((a) => {
+          const nativeOnly = nativeOnlyModes.includes(a.mode);
+          return (
+            <Pressable
+              key={a.mode}
+              accessibilityLabel={nativeOnly ? `${a.label} — needs the REGROWTH app` : a.label}
+              onPress={() => {
+                setOpen(false);
+                if (nativeOnly) onNeedsApp?.(a.mode);
+                else onCapture(a.mode);
+              }}
+              className="flex-row items-center gap-x-3"
+            >
+              <Text className="font-ui text-tab text-snow">{a.label}</Text>
+              {nativeOnly && (
+                <View className="rounded-pill bg-accent-soft px-2 py-0.5">
+                  <Text className="font-ui text-meta text-snow">App</Text>
+                </View>
+              )}
+              <View
+                className={`h-11 w-11 items-center justify-center rounded-pill border border-glass-line bg-glass ${
+                  nativeOnly ? 'opacity-70' : ''
+                }`}
+              >
+                <Ionicons name={a.icon} size={20} color="#FFFFFF" />
+              </View>
+            </Pressable>
+          );
+        })}
 
       <Pressable
         onPress={() => setOpen((o) => !o)}

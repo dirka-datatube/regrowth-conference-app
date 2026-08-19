@@ -8,9 +8,14 @@ import { getInstallState, promptInstall, onInstallAvailabilityChange, type Insta
  * Add-to-home-screen card.
  *
  * Not a nag — it earns its place. On iOS, web push simply does not work until
- * the page is installed, so session reminders depend on this card being
- * actioned. We say why, rather than asking for the install on faith, and we
- * render nothing once the app is installed.
+ * the page is installed, so reminders on the web surface depend on this card
+ * being actioned. We say why, rather than asking for the install on faith, and
+ * we render nothing once the app is installed.
+ *
+ * Since the hybrid native wrapper was bought (2026-08-19) this is one of two
+ * upgrade paths, not the only one: installing gives a full-screen view and web
+ * push, while the native app additionally records a session with the screen
+ * locked. `/get-the-app` explains the split.
  */
 export function InstallPrompt() {
   const [state, setState] = useState<InstallState>('unavailable');
@@ -39,6 +44,9 @@ export function InstallPrompt() {
             {state === 'manual-ios'
               ? 'Tap Share, then "Add to Home Screen". Session reminders only reach you once it is installed.'
               : 'Opens full screen and lets us send you session reminders.'}
+          </Text>
+          <Text className="mt-1 font-body text-note-body text-snow/60">
+            Recording a whole session needs the REGROWTH app.
           </Text>
 
           {state === 'promptable' && (

@@ -31,6 +31,15 @@
 - 2026-08-19 — **Six bottom tabs stand.** Feedback (Polls & Surveys) stays out
   of the nav. When polling is built it needs a non-tab home — most naturally
   under a session or under Events — rather than a seventh tab.
+- 2026-08-19 — **The hybrid native wrapper is bought.** The mobile website
+  stays the primary surface (no download barrier, keeps Squarespace traffic)
+  and a thin native build ships alongside it for the two things a browser
+  cannot do: push notifications that reach a lock screen, and recording a
+  session with the phone in a pocket. This restores EAS, TestFlight and the
+  App Store to scope, and with them the Apple Developer account dependency and
+  App Store review time — which the 13-Nov/16-Nov schedule has no room for.
+  **The release plan needs revisiting: ship the PWA on 16 Nov and follow with
+  the app, rather than gating go-live on store review.**
 
 ---
 

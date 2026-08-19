@@ -83,3 +83,22 @@ export function getInstallState(): InstallState {
   const isIos = /iPad|iPhone|iPod/.test(ua);
   return isIos ? 'manual-ios' : 'unavailable';
 }
+
+/**
+ * One line describing where the user is running, for the "Get the app" page.
+ * Keeps the two surfaces legible rather than leaving people guessing which
+ * one they are on.
+ */
+export function getInstallStateLabel(): string {
+  if (Platform.OS !== 'web') return 'You are using the REGROWTH app.';
+  switch (getInstallState()) {
+    case 'installed':
+      return 'You have added REGROWTH to your home screen.';
+    case 'promptable':
+      return 'Tip: add REGROWTH to your home screen for a full-screen view.';
+    case 'manual-ios':
+      return 'Tip: tap Share, then "Add to Home Screen" for a full-screen view and reminders.';
+    default:
+      return 'You are using REGROWTH in a browser.';
+  }
+}

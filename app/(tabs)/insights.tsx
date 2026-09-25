@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -83,7 +83,12 @@ function NoteCard({ note, onTogglePin }: { note: NoteRow; onTogglePin?: () => vo
 export default function Insights() {
   const attendeeId = useAppStore((s) => s.attendee?.id);
   const [filter, setFilter] = useState<Filter>('all');
-  const [q, setQ] = useState('');
+  // Home's search field hands its query over as ?q=.
+  const params = useLocalSearchParams<{ q?: string }>();
+  const [q, setQ] = useState(params.q ?? '');
+  useEffect(() => {
+    if (params.q !== undefined) setQ(params.q);
+  }, [params.q]);
 
   const { data } = useQuery<NoteRow[]>({
     queryKey: ['notes', attendeeId],

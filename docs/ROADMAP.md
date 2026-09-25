@@ -144,7 +144,7 @@ cadence: 2 weeks each, ~10 working days. Solo-developer-plus-agent friendly.
 | 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | Session reminders arrive on time; check-in works 3 ways; auction is race-safe & realtime | §10.6, §10.8 |
 | 5 | [Hardening & TestFlight launch](sprints/sprint-05-hardening-and-testflight.md) | Security/perf audit passed, observability live, TestFlight external build in Kylie's hands, event-day runbook | all of §10 verified |
 | 6 | [PWA delivery & design rollout](sprints/sprint-06-pwa-and-design-rollout.md) | Six-tab IA and the Figma design language shipped; installable PWA builds and boots | supersedes the native/TestFlight tasks in 1–5 |
-| 7 | [Design system v2 & registration-aware tabs](sprints/sprint-07-design-v2-core-tabs.md) | Six tab roots match Figma v2 in both registration states | Epic phase 1 |
+| 7 | [Design system v2 & registration-aware tabs](sprints/sprint-07-design-v2-core-tabs.md) | Six tab roots match Figma v2 in both registration states — **built 25 Sep** | Epic phase 1 |
 | 8–12 | See [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md) | Accounts, commerce loop, event sub-app, Connect/Profile content, launch 16 Nov | Epic phase 1 |
 | 13–15 | See [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md) | Recording + AI, on-site/live, event readiness by 15 Mar 2027 | Epic phase 2 |
 

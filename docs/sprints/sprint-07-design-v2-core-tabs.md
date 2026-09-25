@@ -33,11 +33,12 @@ badge card from Profile.
 
 ## Tasks
 
-### 07.1 Tokens v2 and the floating tab bar
+### 07.1 Tokens v2 and the tab bar
 Add the alert semantic colours (confirmation, action required, welcome,
-reminder), the teal CTA, and the cloud card surface to `tailwind.config.js`. Rework
-`components/TabBar.tsx` to float — inset from the screen edges and rounded on
-every corner.
+reminder), the teal CTA, and the cloud card surface to `tailwind.config.js`.
+Relabel the last tab **Profile**, with the avatar inside the selected pill, and
+match the bar's spacing to the comps. (The first version of this brief said the
+bar floats; every v2 frame draws it full width.)
 **Acceptance:** no hex literals in screens for any colour the design names.
 
 ### 07.2 Registration read model
@@ -109,3 +110,49 @@ hard-code it.
 - Profile menu destinations — Sprint 11; rows route to existing screens where
   they exist
 - Real icons, logo and imagery — Sprint 12 (`figma.com` is network-blocked here)
+
+---
+
+## Delivered — 25 Sep 2026
+
+| Task | What shipped |
+| --- | --- |
+| 07.1 | v2 colours, radii, the `section` size and the Outfit stack in `tailwind.config.js`; prop colours in `lib/theme.ts`; the Profile tab |
+| 07.2 | Migration `20260925000000_registration_state.sql`; `lib/registrations.ts`; `useRegistrations()` → `{ registrations, tickets, isRegisteredFor }` |
+| 07.3 | `components/BadgeQr.tsx` renders the badge URL from `lib/qr.ts`; `QrModal` no longer a placeholder; the in-app scanner reads both URLs and bare tokens; `app/c/[token].tsx` is where a phone camera lands |
+| 07.4 | `EventHero`, `QuickAccessGrid`, `FeaturedRow`, `NeedHelp`, `ContinueLearning`, `SupportChip`, `AnnouncementBanner`, `TicketCard`, `BadgeCard`, `AlertCard` + `AlertDialog`, `FeatureCard`, `ProfileSummaryCard`, `MenuRow`, `SectionHeading`, `TabScreen` |
+| 07.5–07.9 | Home, Events, Alerts, Connect and Profile rebuilt; `app/tickets.tsx` |
+| 07.10 | `?registered=0` previews the unregistered state; `--clear` on both exports fixes the Sprint 06 demo-mode leak (Metro cached the inlined env value) |
+
+### Verification
+
+- `npm run typecheck`: 89 errors, below the 91 measured at the start of the sprint (the 92 baseline).
+- `npm run lint`: 0 errors. `dist-demo/` is now ignored like `dist/`.
+- `npm run build:web` boots to Welcome with no console errors and `IS_DEMO` compiled to false. `npm run build:web:demo` compiles it to true.
+- `npm run test:smoke` (new, `scripts/smoke-web.mjs`) opens all six tabs, My Tickets and the scanned-badge page at 402×874 in both states, and passes with zero console errors. It decodes the Profile badge QR and the Events ticket QR to `https://app.regrowth.au/c/demoqr12345678`.
+
+### Also in this sprint
+
+- **Registration columns are guarded.** Attendees could always update their own row. Now that event, tier, status, QR token and check-in time decide what the app unlocks, the new trigger `guard_attendee_registration` stops an attendee changing them. The service role and admins are unaffected.
+- **Alerts master switch.** It is stored as `notification_prefs.enabled`, and `send-push` skips attendees who switched alerts off. Per-type choices survive a round trip.
+
+### Stand-ins and deviations
+
+| Item | Why |
+| --- | --- |
+| Ionicons instead of the comp's illustrated icons; colour blocks instead of photographs | `figma.com` is network-blocked here. **G5 (asset fidelity) fails** until the Sprint 12 export |
+| System fonts for Inter, Poppins, Outfit and Butler | Licensing, Sprint 12 |
+| "REGROWTH Team" on the support chip and Need Help, not "Jack Garcia" | The comp name is placeholder copy (review §3) |
+| Chat with Us opens `EXPO_PUBLIC_SUPPORT_URL`, or the FAQs when it is unset | Decision 3 |
+| Badge copy drops "at Crown" | Venue is Decision 2 |
+| Home search hands its query to Insights | Notes are the only searchable content today |
+| Weather tile and Templates & Resources row dimmed; Find a Referral button inert | Sprints 10 and 11; Decision 5 |
+| ACCESS EVENT and GET STARTED open the agenda | The event sub-app is Sprint 10 (`eventEntryHref()` changes in one place) |
+| Networking Connections shows the connection count, not "Matched Delegates" | That is the number the app has |
+| No ticket download on My Tickets | Decision 7, Sprint 09 |
+
+### Before this reaches production
+
+1. Apply migration `20260925000000_registration_state.sql` to the live project. Until then every attendee reads as registered, with no tier pill.
+2. Redeploy the `send-push` edge function so the master switch takes effect.
+3. Set `EXPO_PUBLIC_APP_URL` (and, once Decision 3 is made, `EXPO_PUBLIC_SUPPORT_URL`) in the hosting build.

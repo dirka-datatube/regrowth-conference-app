@@ -33,6 +33,7 @@ export type Database = {
 };
 
 export type AttendeeVisibility = 'public' | 'connections_only' | 'hidden';
+export type RegistrationStatus = 'pending' | 'confirmed' | 'cancelled';
 export type SessionType =
   | 'keynote'
   | 'panel'
@@ -84,6 +85,9 @@ export type Attendee = {
   notification_prefs: Record<NotificationCategory, boolean> & Record<string, boolean>;
   checked_in_at: string | null;
   last_seen_at: string | null;
+  /** Migration 20260925000000. An attendee row is a registration until Sprint 08. */
+  ticket_tier: string | null;
+  registration_status: RegistrationStatus;
   created_at: string;
   updated_at: string;
 };

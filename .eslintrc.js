@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['expo'],
-  ignorePatterns: ['/dist/*', 'supabase/functions/**'],
+  ignorePatterns: ['/dist/*', '/dist-demo/*', 'supabase/functions/**'],
   rules: {
     'react-hooks/exhaustive-deps': 'warn',
   },

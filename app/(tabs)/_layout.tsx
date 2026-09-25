@@ -14,7 +14,8 @@ import { TabBar } from '@/components/TabBar';
  * no home. Tracked as an open decision in docs/SPEC-V3-GAP-ANALYSIS.md §7 —
  * either accept six or fold Feedback into Insights.
  *
- * Order is fixed by the design: Home · Alerts · Events · Insights · Connect · Me.
+ * Order is fixed by the design: Home · Alerts · Events · Insights · Connect ·
+ * Profile. (The route stays `me`; v2 relabelled the tab.)
  */
 export default function TabsLayout() {
   const session = useAppStore((s) => s.session);
@@ -36,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="events" options={{ title: 'Events' }} />
       <Tabs.Screen name="insights" options={{ title: 'Insights' }} />
       <Tabs.Screen name="connect" options={{ title: 'Connect' }} />
-      <Tabs.Screen name="me" options={{ title: 'Me' }} />
+      <Tabs.Screen name="me" options={{ title: 'Profile' }} />
     </Tabs>
   );
 }

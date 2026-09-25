@@ -14,8 +14,27 @@ import type {
   GalleryItem,
   PodcastEpisode,
 } from '@/types/database';
+import type { Registration } from '@/lib/registrations';
 
 export const IS_DEMO = process.env.EXPO_PUBLIC_DEMO_MODE === 'true';
+
+/**
+ * Demo previews the registered state by default. Open any URL with
+ * `?registered=0` for the not-registered one — Home and Events swap to GET
+ * STARTED and the registrations-open banner, and Connect locks its
+ * communities. The choice holds for the browser tab; `?registered=1` resets it.
+ */
+function readDemoRegistered(): boolean {
+  try {
+    const param = new URLSearchParams(window.location.search).get('registered');
+    if (param !== null) window.sessionStorage.setItem('demo-registered', param);
+    return (param ?? window.sessionStorage.getItem('demo-registered')) !== '0';
+  } catch {
+    return true; // native, or storage blocked
+  }
+}
+
+export const DEMO_REGISTERED = IS_DEMO && readDemoRegistered();
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
 const ME_ID = '11111111-1111-1111-1111-111111111111';
@@ -29,7 +48,7 @@ export const demoAttendee: Attendee = {
   email: 'kylie@regrowth.au',
   name: 'Kylie Walsh',
   company: 'REGROWTH',
-  role: 'Founder',
+  role: 'Founder & Director',
   photo_url: null,
   bio: 'Founder of REGROWTH and host of the Impact & Influence Podcast.',
   interests: ['leadership', 'coaching', 'sales'],
@@ -47,9 +66,18 @@ export const demoAttendee: Attendee = {
   } as Attendee['notification_prefs'],
   checked_in_at: null,
   last_seen_at: null,
+  ticket_tier: 'VIP Pass',
+  registration_status: 'confirmed',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
+
+// Kylie holds both products, as on My Tickets (146:1906). A real account can
+// hold only one until Sprint 08 — see lib/registrations.ts.
+export const demoRegistrations: Registration[] = [
+  { eventId: EVENT_ID, ticketTier: 'VIP Pass', status: 'confirmed', qrToken: 'demoqr12345678' },
+  { eventId: STUDY_TOUR_ID, ticketTier: 'VIP Delegate', status: 'confirmed', qrToken: 'demoqr87654321' },
+];
 
 const today = new Date();
 function at(dayOffset: number, hour: number, minute = 0) {
@@ -204,8 +232,10 @@ export const demoEvents = [
     id: EVENT_ID,
     name: 'Navigate 2027',
     subtitle: 'REGROWTH Annual Conference',
-    start_date: '2027-08-11',
-    end_date: '2027-08-13',
+    // The v2 comps date Navigate 15–17 March 2027 (Home, Agenda). Fixture
+    // only — the admin panel owns the real dates.
+    start_date: '2027-03-15',
+    end_date: '2027-03-17',
     venue: 'Crown Towers, Perth',
     hero_url: null,
   },
@@ -288,22 +318,63 @@ export const demoPodcast: PodcastEpisode[] = [
   },
 ];
 
+// The seven cards on Alerts (71:540). The fourth sits under the countdown
+// dialog in the comp; tapping it opens that dialog here.
 export const demoAlerts = [
   {
     notification: {
-      id: 'noti1', title: 'Session starting in 15 mins',
-      body: 'The Mindset of Top Performers · Studio A',
-      type: 'session_starting' as const,
+      id: 'noti1', type: 'registration_confirmed',
+      title: 'Registration Confirmed',
+      body: 'Your registration for the Study Tour has been confirmed. We’re excited to have you join us.',
     },
   },
   {
     notification: {
-      id: 'noti2', title: 'You should meet James',
-      body: 'You\'ve both got leadership and tech on your interests list.',
-      type: 'people_to_meet' as const,
+      id: 'noti2', type: 'action_required',
+      title: 'Action Required',
+      body: 'Complete Your Profile - add your photo, company details and interests to help other attendees connect with you.',
+    },
+  },
+  {
+    notification: {
+      id: 'noti3', type: 'welcome',
+      title: 'Welcome To The Event App',
+      body: 'Explore the agenda, speakers and attendee directory to get the most from your experience.',
+    },
+  },
+  {
+    notification: {
+      id: 'noti4', type: 'countdown',
+      title: 'Only 5 Days To Go!',
+      body: 'Your Study Tour is almost here. Take a moment to review the agenda and event details before you arrive.',
+      data: { event_id: STUDY_TOUR_ID },
+    },
+  },
+  {
+    notification: {
+      id: 'noti5', type: 'speaker_added',
+      title: 'New Speaker Added',
+      body: 'A new keynote speaker has been added to the program. Check out their session and add it to your schedule.',
+    },
+  },
+  {
+    notification: {
+      id: 'noti6', type: 'agenda_updated',
+      title: 'Agenda Updated',
+      body: 'The latest event agenda is now available. Review any changes and plan your sessions.',
+    },
+  },
+  {
+    notification: {
+      id: 'noti7', type: 'people_to_meet',
+      title: 'Networking Opportunity',
+      body: 'Connect with fellow attendees before the event starts. Start building your network today.',
     },
   },
 ];
+
+// Profile menu counts (34:1423).
+export const demoProfileCounts = { savedSessions: 8, connections: 24 };
 
 export const demoSuggestions = {
   attendees: demoOtherAttendees.slice(0, 3),

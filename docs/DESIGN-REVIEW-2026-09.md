@@ -83,7 +83,10 @@ native wrapper config; live transcription needs a speech-to-text service.
   Programs** on Home and Events. The unpriced-scope flag from August closes.
 - **Events is a single featured event**, not a carousel. The Study Tour gets its
   own Home variant, so the featured event is contextual.
-- **Tab bar floats** — inset from the screen edges, rounded on all corners.
+- **Tab bar** keeps its August geometry — full width, 20px radius — and
+  relabels the last tab **Profile**, with the avatar inside the selected pill.
+  *(Corrected 25 Sep: the first version of this review said the bar floats,
+  inset from the screen edges. Every v2 frame draws it full width.)*
 - **Quick Access grid** on Home: Alerts, Events, Insights, Connect, Your
   Profile, Weather.
 - **Featured carousel** on Home: podcast, leadership resources (PDF), industry
@@ -91,7 +94,7 @@ native wrapper config; live transcription needs a speech-to-text service.
 - **Capture moved to headers.** Profile and Create Note carry mic + camera
   buttons in the header — the spec's "camera/video toggle + mic record button".
 - **Alerts are typed and colour-coded**: confirmation (teal), action required
-  (red), welcome (mauve), reminders (gold), plus a global toggle and a
+  (red), welcome (earth), reminders (gold), plus a global toggle and a
   countdown modal (*"Only 5 Days To Go!"*).
 - **Scan QR** has an **Upload From Gallery** fallback — which on the web is a
   file input and a JS decoder, and works on every phone without camera

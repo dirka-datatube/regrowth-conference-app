@@ -2,14 +2,19 @@ import { View, Pressable, Text, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAppStore } from '@/lib/store';
+import { colors } from '@/lib/theme';
 import { GlassPanel } from './Glass';
 
 /**
  * Glass tab bar — the design's bottom navigation.
  *
  * Selected tab renders as a translucent blue pill carrying icon + label;
- * unselected tabs are icon-only. "Me" is the attendee's own avatar rather
- * than a glyph, which is how the Figma file distinguishes it.
+ * unselected tabs are icon-only. The last tab is the attendee's own avatar
+ * rather than a glyph; v2 labels it "Profile" and puts the avatar inside the
+ * pill when selected (Profile 34:1423).
+ *
+ * Geometry (every v2 frame): full width, 20px radius, active pill 10px from
+ * the top, home indicator 70px from the top.
  *
  * ICON SOURCES — these are Ionicons stand-ins. The Figma file exports its own
  * glyphs (Planner, Urgent Message, Light, Crowd) which could not be fetched
@@ -31,7 +36,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   return (
     <View className="absolute inset-x-0 bottom-0">
-      <GlassPanel tone="raised" radius="rounded-nav" className="h-[92px] px-4 pt-4">
+      <GlassPanel tone="raised" radius="rounded-nav" className="h-[87px] px-4 pt-2.5">
         <View className="flex-row items-center justify-between">
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
@@ -53,44 +58,41 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 accessibilityRole="tab"
                 accessibilityState={{ selected: focused }}
                 accessibilityLabel={label}
-                className={`h-8 flex-row items-center justify-center gap-x-1.5 rounded-pill ${
-                  focused && !isMe ? 'bg-accent-soft px-3' : 'px-1.5'
+                className={`h-10 flex-row items-center justify-center gap-x-1.5 rounded-pill ${
+                  focused ? 'bg-accent-soft px-3' : 'px-1'
                 }`}
               >
                 {isMe ? (
-                  attendee?.photo_url ? (
-                    <Image
-                      source={{ uri: attendee.photo_url }}
-                      className={`h-8 w-8 rounded-pill ${focused ? 'border-2 border-accent' : ''}`}
-                      accessibilityIgnoresInvertColors
-                    />
-                  ) : (
-                    <View
-                      className={`h-8 w-8 items-center justify-center rounded-pill bg-glass ${
-                        focused ? 'border-2 border-accent' : ''
-                      }`}
-                    >
-                      <Ionicons name="person" size={16} color="#FFFFFF" />
-                    </View>
-                  )
+                  <Avatar uri={attendee?.photo_url} size={focused ? 28 : 32} />
                 ) : (
                   <Ionicons
                     name={focused ? icon.on : icon.off}
-                    size={22}
-                    color={focused ? '#FFFFFF' : '#B9C0C9'}
+                    size={24}
+                    color={focused ? colors.snow : colors.indicator}
                   />
                 )}
-                {focused && !isMe && <Text className="font-ui text-tab text-snow">{label}</Text>}
+                {focused && <Text className="font-ui text-tab text-snow">{label}</Text>}
               </Pressable>
             );
           })}
         </View>
 
         {/* Home indicator */}
-        <View className="mt-3 items-center">
+        <View className="mt-5 items-center">
           <View className="h-[5px] w-[135px] rounded-pill bg-indicator" />
         </View>
       </GlassPanel>
+    </View>
+  );
+}
+
+function Avatar({ uri, size }: { uri?: string | null; size: number }) {
+  const box = { width: size, height: size };
+  return uri ? (
+    <Image source={{ uri }} style={box} className="rounded-pill" accessibilityIgnoresInvertColors />
+  ) : (
+    <View style={box} className="items-center justify-center rounded-pill bg-glass">
+      <Ionicons name="person" size={size / 2} color={colors.snow} />
     </View>
   );
 }

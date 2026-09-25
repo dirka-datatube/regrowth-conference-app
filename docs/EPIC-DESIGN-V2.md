@@ -31,12 +31,13 @@ is two weeks and ends at the 13 November go/no-go.
 ## Phase 1 — launch-ready by 16 November
 
 ### Sprint 07 — Design system v2 and registration-aware tabs
-**25 Sep – 1 Oct** · full brief: [`sprints/sprint-07-design-v2-core-tabs.md`](sprints/sprint-07-design-v2-core-tabs.md)
+**25 Sep – 1 Oct** · full brief: [`sprints/sprint-07-design-v2-core-tabs.md`](sprints/sprint-07-design-v2-core-tabs.md) ·
+**built 25 Sep** — see the brief's *Delivered* section
 
 The six tab roots match the new comps, in both registered and unregistered
 states.
 
-- Tokens v2 and the floating tab bar
+- Tokens v2 and the tab bar's Profile tab
 - Registration read model — `useRegistrations()`, ticket tier and status — the
   seam Sprint 08 refactors underneath
 - Real QR rendering (fixes the July placeholder defect), URL-encoded tokens

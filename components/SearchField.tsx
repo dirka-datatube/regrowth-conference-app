@@ -12,12 +12,14 @@ export function SearchField({
   value,
   onChangeText,
   placeholder = 'Search',
+  onSubmit,
   onVoice,
   voiceAvailable = true,
 }: {
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
+  onSubmit?: () => void;
   onVoice?: () => void;
   voiceAvailable?: boolean;
 }) {
@@ -31,6 +33,7 @@ export function SearchField({
         placeholderTextColor="#FFFBFB"
         className="flex-1 font-sans text-field text-snow"
         returnKeyType="search"
+        onSubmitEditing={onSubmit}
         accessibilityLabel={placeholder}
       />
       {voiceAvailable && (

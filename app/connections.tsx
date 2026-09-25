@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { QrModal } from '@/components/QrModal';
 import { ScannerModal } from '@/components/ScannerModal';
+import { tokenFromQr } from '@/lib/qr';
 
 export default function Connections() {
   const me = useAppStore((s) => s.attendee);
@@ -40,8 +41,11 @@ export default function Connections() {
   });
 
   const handleScan = useMutation({
-    mutationFn: async (qrToken: string) => {
+    mutationFn: async (scanned: string) => {
       if (!me) return;
+      // Badges encode a URL since Sprint 07; older codes are the bare token.
+      const qrToken = tokenFromQr(scanned);
+      if (!qrToken) throw new Error('That QR code is not a REGROWTH badge.');
       const { data, error } = await supabase.functions.invoke('qr-connect', {
         body: { scanner_id: me.id, scanned_qr_token: qrToken },
       });

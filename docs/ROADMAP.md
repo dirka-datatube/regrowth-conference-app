@@ -7,6 +7,47 @@
 
 **Decisions log:**
 - 2026-07-17 — Brand font licensing **deferred**; shipping iOS built-in fallbacks (Georgia / Snell Roundhand / Helvetica Neue), mapped in `tailwind.config.js`.
+- 2026-08-18 — **Delivery is a PWA, not a native iOS app.** The App Store
+  download was the stated barrier to entry. Consequences: web push requires
+  add-to-home-screen on iOS, background audio capture stops when the screen
+  locks, and geofence check-in is unavailable. See
+  [`SPEC-V3-GAP-ANALYSIS.md`](SPEC-V3-GAP-ANALYSIS.md) §4.
+- 2026-08-18 — **The Figma file is the design of record** (`NEW: Event App`,
+  `A8G0Lx1Uflhrl4uaqB2QLV`). It settles the IA at **six bottom tabs** — Home ·
+  Alerts · Events · Insights · Connect · Me — and defines **Insights as the
+  event notes library**. Feedback (Polls & Surveys) is dropped from the nav and
+  remains an open decision.
+- 2026-08-18 — NativeWind pinned to `4.1.23`. `^4.1.10` had drifted to 4.2.6,
+  whose babel preset requires `react-native-worklets/plugin` (reanimated 4)
+  while Expo SDK 51 pins reanimated 3 — this broke the web build outright.
+- 2026-08-18 — Web export switched to `output: "single"` (SPA). The app is
+  entirely behind a login so prerendering buys no SEO, and Supabase auth touches
+  `window.localStorage` at module load, which crashes a Node prerender pass.
+- 2026-08-19 — **v1 targets Navigate 2027**, not 2026. The app goes live in
+  November 2026 and sells into the 2027 conference, which is what makes the
+  early-bird pricing in spec v3 meaningful. The live event row is renamed by
+  migration `20260819000000`, and the **REGROWTH Study Tour 2027** is inserted
+  as the second product.
+- 2026-08-19 — **Six bottom tabs stand.** Feedback (Polls & Surveys) stays out
+  of the nav. When polling is built it needs a non-tab home — most naturally
+  under a session or under Events — rather than a seventh tab.
+- 2026-08-19 — **The hybrid native wrapper is bought.** The mobile website
+  stays the primary surface (no download barrier, keeps Squarespace traffic)
+  and a thin native build ships alongside it for the two things a browser
+  cannot do: push notifications that reach a lock screen, and recording a
+  session with the phone in a pocket. This restores EAS, TestFlight and the
+  App Store to scope, and with them the Apple Developer account dependency and
+  App Store review time — which the 13-Nov/16-Nov schedule has no room for.
+  **The release plan needs revisiting: ship the PWA on 16 Nov and follow with
+  the app, rather than gating go-live on store review.**
+- 2026-09-25 — **Figma v2 reviewed; design epic opened.** The file grew from 22
+  frames to 54 screens and now defines a registered/unregistered state, open
+  password sign-up, tiered tickets, live support chat and live transcription.
+  With Navigate on 15–17 March 2027, the 16 November go-live is re-framed as a
+  *pre-event* launch: Phase 1 (launch-ready) and Phase 2 (event-ready, which
+  takes App Store review off the November critical path). See
+  [`DESIGN-REVIEW-2026-09.md`](DESIGN-REVIEW-2026-09.md) and
+  [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md).
 
 ---
 
@@ -102,6 +143,10 @@ cadence: 2 weeks each, ~10 working days. Solo-developer-plus-agent friendly.
 | 3 | [Connections, notes & Q&A](sprints/sprint-03-connections-notes-qa.md) | QR connect, business-card OCR, AI note summaries, moderated Q&A all work end-to-end | §10.3, §10.4, §10.5 |
 | 4 | [Push, check-in & auction](sprints/sprint-04-push-checkin-auction.md) | Session reminders arrive on time; check-in works 3 ways; auction is race-safe & realtime | §10.6, §10.8 |
 | 5 | [Hardening & TestFlight launch](sprints/sprint-05-hardening-and-testflight.md) | Security/perf audit passed, observability live, TestFlight external build in Kylie's hands, event-day runbook | all of §10 verified |
+| 6 | [PWA delivery & design rollout](sprints/sprint-06-pwa-and-design-rollout.md) | Six-tab IA and the Figma design language shipped; installable PWA builds and boots | supersedes the native/TestFlight tasks in 1–5 |
+| 7 | [Design system v2 & registration-aware tabs](sprints/sprint-07-design-v2-core-tabs.md) | Six tab roots match Figma v2 in both registration states — **built 25 Sep** | Epic phase 1 |
+| 8–12 | See [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md) | Accounts, commerce loop, event sub-app, Connect/Profile content, launch 16 Nov | Epic phase 1 |
+| 13–15 | See [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md) | Recording + AI, on-site/live, event readiness by 15 Mar 2027 | Epic phase 2 |
 
 ## 3. How to run a sprint with an AI agent
 

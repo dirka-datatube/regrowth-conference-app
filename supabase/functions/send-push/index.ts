@@ -59,7 +59,8 @@ Deno.serve(async (req) => {
     for (const a of attendees ?? []) {
       if (!isAdminAnnouncement) {
         const prefs = a.notification_prefs ?? {};
-        if (prefs[notification.type] === false) continue;
+        // `enabled` is the master switch on the Alerts tab (v2, 71:540).
+        if (prefs.enabled === false || prefs[notification.type] === false) continue;
 
         // 4-per-day cap
         const { count } = await supabase

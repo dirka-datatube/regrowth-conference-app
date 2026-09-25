@@ -1,15 +1,30 @@
 -- Seed data for local dev. Production seeds happen via the admin panel
 -- + ActiveCampaign sync.
 
+-- Two products (spec v3): the conference is "Navigate"; the study tour is the
+-- "REGROWTH Study Tour". Confirmed 2026-08-19: v1 targets Navigate 2027, not
+-- 2026 — the app launches Nov 2026 and sells into the 2027 event, which is what
+-- makes early-bird pricing meaningful.
+--
+-- Dates and venues below are FIXTURES. Real ones come from the admin panel.
 insert into events (id, name, start_date, end_date, venue, venue_lat, venue_lng)
 values (
   '00000000-0000-0000-0000-000000000001',
-  'REGROWTH Annual Conference 2026',
-  '2026-08-12',
-  '2026-08-14',
+  'Navigate 2027',
+  '2027-08-11',
+  '2027-08-13',
   'Crown Towers, Perth',
   -31.9614,
   115.8617
+),
+(
+  '00000000-0000-0000-0000-000000000002',
+  'REGROWTH Study Tour 2027',
+  '2027-06-02',
+  '2027-06-09',
+  'Melbourne',
+  -37.8136,
+  144.9631
 )
 on conflict (id) do nothing;
 

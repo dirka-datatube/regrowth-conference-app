@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { queryClient, queryPersister } from '@/lib/queryClient';
 import { IS_DEMO, demoAttendee } from '@/lib/demo';
+import { registerServiceWorker } from '@/lib/pwa';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -17,6 +18,11 @@ export default function RootLayout() {
   const setSession = useAppStore((s) => s.setSession);
   const setAttendee = useAppStore((s) => s.setAttendee);
   const [ready, setReady] = useState(false);
+
+  // PWA: offline shell + web push. No-op on native.
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   useEffect(() => {
     if (IS_DEMO) {

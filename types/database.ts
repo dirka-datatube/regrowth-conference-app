@@ -33,6 +33,7 @@ export type Database = {
 };
 
 export type AttendeeVisibility = 'public' | 'connections_only' | 'hidden';
+export type RegistrationStatus = 'pending' | 'confirmed' | 'cancelled';
 export type SessionType =
   | 'keynote'
   | 'panel'
@@ -84,6 +85,9 @@ export type Attendee = {
   notification_prefs: Record<NotificationCategory, boolean> & Record<string, boolean>;
   checked_in_at: string | null;
   last_seen_at: string | null;
+  /** Migration 20260925000000. An attendee row is a registration until Sprint 08. */
+  ticket_tier: string | null;
+  registration_status: RegistrationStatus;
   created_at: string;
   updated_at: string;
 };
@@ -180,6 +184,12 @@ export type Note = {
   id: string;
   attendee_id: string;
   session_id: string | null;
+  // Insights fields — migration 20260818000000_insights_notes
+  title: string | null;
+  event_id: string | null;
+  pinned: boolean;
+  important: boolean;
+  reminder_at: string | null;
   body: string;
   ai_summary: string | null;
   ai_summary_generated_at: string | null;

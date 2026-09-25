@@ -1,23 +1,53 @@
 import { useState } from 'react';
-import { View, RefreshControl, Pressable, Image } from 'react-native';
+import { View, Text, Image, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
-import { useAppStore } from '@/lib/store';
-import { useHappeningNow, useUpNext } from '@/lib/hooks/useSessions';
-import { useSuggestions } from '@/lib/hooks/useSuggestions';
 import { useQueryClient } from '@tanstack/react-query';
+
+import { TabScreen, Section } from '@/components/TabScreen';
+import { SearchField } from '@/components/SearchField';
+import { EventHero } from '@/components/EventHero';
+import { SectionHeading } from '@/components/SectionHeading';
+import { QuickAccessGrid, type QuickAccessItem } from '@/components/QuickAccessGrid';
+import { FeaturedRow } from '@/components/FeaturedRow';
+import { NeedHelp } from '@/components/NeedHelp';
+import { ContinueLearning } from '@/components/ContinueLearning';
+import { useAppStore } from '@/lib/store';
+import { useRegistrations } from '@/lib/hooks/useRegistrations';
+import { NAVIGATE } from '@/lib/events';
+import { FEATURED } from '@/lib/content';
+import { canRecordInBackground, needsNativeApp, nativeAppLink } from '@/lib/capture';
+import { colors } from '@/lib/theme';
+
+/**
+ * Home — Figma v2 "Home Page Navigate" (3:1921) and its REGISTERED variant
+ * (132:598).
+ *
+ * The featured event is Navigate, as in both comps; registration decides the
+ * hero's badge and call to action. The Study Tour variant (172:526) is the same
+ * screen with STUDY_TOUR passed to the hero.
+ *
+ * August's live panels (happening now, up next, people to meet) move to the
+ * event sub-app in Sprint 10, where the comp puts them; their hooks stay in
+ * lib/hooks.
+ */
+
+const QUICK_ACCESS: QuickAccessItem[] = [
+  { label: 'Alerts', icon: 'mail-outline', href: '/alerts' },
+  { label: 'Events', icon: 'calendar-outline', href: '/events' },
+  { label: 'Insights', icon: 'bulb-outline', href: '/insights' },
+  { label: 'Connect', icon: 'people-outline', href: '/connect' },
+  { label: 'Your Profile', icon: 'person-outline', href: '/me' },
+  // Weather is an event sub-app screen (37:26) — Sprint 10.
+  { label: 'Weather', icon: 'rainy-outline' },
+];
 
 export default function Home() {
   const attendee = useAppStore((s) => s.attendee);
-  const happening = useHappeningNow();
-  const upNext = useUpNext();
-  const suggestions = useSuggestions();
+  const { isRegisteredFor } = useRegistrations();
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [q, setQ] = useState('');
 
   async function refresh() {
     setRefreshing(true);
@@ -27,141 +57,81 @@ export default function Home() {
 
   const firstName = (attendee?.name ?? '').split(' ')[0] || 'there';
 
+  // The only searchable content the app holds today is the attendee's own
+  // notes, so Home search hands off to Insights rather than pretending to be
+  // a global search.
+  function search() {
+    const query = q.trim();
+    router.navigate({ pathname: '/insights', params: query ? { q: query } : {} });
+  }
+
+  // Dictation records audio, which needs the native app to survive a locked
+  // screen — same rule as the Insights capture button.
+  const recordingIsNativeOnly = needsNativeApp();
+  function onVoice() {
+    router.push((recordingIsNativeOnly ? nativeAppLink() : '/notes/new?capture=voice') as never);
+  }
+
   return (
-    <Screen
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#D17F5D" />}
-    >
-      <View className="flex-row items-center justify-between pt-2">
-        <T variant="caption">REGROWTH®</T>
-        <Pressable onPress={() => router.push('/menu')} hitSlop={10}>
-          <Ionicons name="menu" size={28} color="#FFFFFF" />
-        </Pressable>
-      </View>
-
-      <View className="mt-6">
-        <T variant="caption">Welcome,</T>
-        <T variant="hero" className="mt-1">{firstName}</T>
-        <T variant="script" className="mt-1">we're glad to see you.</T>
-      </View>
-
-      {/* Happening now */}
-      <View className="mt-8">
-        <T variant="sub">Happening now</T>
-        {happening.data && happening.data.length > 0 ? (
-          happening.data.map((s) => (
-            <Card key={s.id} className="mt-3" onPress={() => router.push(`/session/${s.id}`)}>
-              <T variant="h3">{s.title}</T>
-              {s.room && <T variant="small" className="mt-1">{s.room}</T>}
-              <View className="mt-4">
-                <Button label="I'm here" variant="primary" fullWidth={false} onPress={() => {/* check-in */}} />
-              </View>
-            </Card>
-          ))
-        ) : (
-          <Card className="mt-3">
-            <T variant="body" className="text-cloud/80">
-              Nothing on right now. Take a breath, grab a coffee — we're just getting started.
-            </T>
-          </Card>
-        )}
-      </View>
-
-      {/* Up next */}
-      <View className="mt-8">
-        <T variant="sub">Up next in 30 minutes</T>
-        {upNext.data && upNext.data.length > 0 ? (
-          upNext.data.map((s) => (
-            <Card key={s.id} variant="earth" className="mt-3" onPress={() => router.push(`/session/${s.id}`)}>
-              <T variant="h3">{s.title}</T>
-              {s.room && <T variant="small" className="mt-1">{s.room}</T>}
-              {upNext.data.length > 1 && (
-                <T variant="caption" className="mt-3 text-earth">
-                  Don't miss this — pick the one for you.
-                </T>
-              )}
-            </Card>
-          ))
-        ) : (
-          <Card className="mt-3">
-            <T variant="body" className="text-cloud/80">We'll let you know when something starts soon.</T>
-          </Card>
-        )}
-      </View>
-
-      {/* People to meet */}
-      <View className="mt-8">
-        <T variant="sub">People you should meet today</T>
-        <View className="mt-3 gap-y-3">
-          {suggestions.data?.attendees.map((p: any) => (
-            <Card key={p.id} onPress={() => router.push(`/attendees/${p.id}`)}>
-              <View className="flex-row items-center">
-                {p.photo_url ? (
-                  <Image source={{ uri: p.photo_url }} className="w-14 h-14 rounded-full bg-snow/10" />
-                ) : (
-                  <View className="w-14 h-14 rounded-full bg-snow/10 items-center justify-center">
-                    <Ionicons name="person" size={24} color="#DCD9D0" />
-                  </View>
-                )}
-                <View className="ml-4 flex-1">
-                  <T variant="h3">{p.name}</T>
-                  <T variant="small">{[p.role, p.company].filter(Boolean).join(' • ')}</T>
-                  {suggestions.data?.rationale[p.id] && (
-                    <T variant="caption" className="mt-1 text-earth normal-case tracking-normal">
-                      {suggestions.data.rationale[p.id]}
-                    </T>
-                  )}
-                </View>
-              </View>
-            </Card>
-          ))}
-          {!suggestions.data?.attendees.length && (
-            <Card>
-              <T variant="body" className="text-cloud/80">
-                We're still learning who'd be a great match. Check back later today.
-              </T>
-            </Card>
+    <TabScreen
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.earth} />}
+      header={
+        <View className="flex-row items-center gap-x-3.5 pb-1 pt-2">
+          {attendee?.photo_url ? (
+            <Image
+              source={{ uri: attendee.photo_url }}
+              className="h-[46px] w-[47px] rounded-pill"
+              accessibilityIgnoresInvertColors
+            />
+          ) : (
+            <View className="h-[46px] w-[47px] items-center justify-center rounded-pill bg-glass">
+              <Ionicons name="person" size={22} color={colors.snow} />
+            </View>
           )}
+          <View className="flex-1">
+            <Text className="font-data text-[20px] text-snow" numberOfLines={1}>
+              Hello, {firstName}
+            </Text>
+            <Text className="mt-1 font-body text-[13px] text-snow">Welcome to REGROWTH</Text>
+          </View>
         </View>
+      }
+    >
+      <Section>
+        <SearchField
+          value={q}
+          onChangeText={setQ}
+          onSubmit={search}
+          placeholder="Search your notes"
+          onVoice={onVoice}
+          voiceAvailable={canRecordInBackground() !== 'unsupported' || recordingIsNativeOnly}
+        />
+      </Section>
+
+      <View className="gap-y-1">
+        <Text className="text-center font-data text-[16px] text-snow">Your Event Experience Starts Here</Text>
+        <EventHero product={NAVIGATE} registered={isRegisteredFor(NAVIGATE.id)} />
       </View>
 
-      {/* Partners worth checking out */}
-      <View className="mt-8">
-        <T variant="sub">Partners worth a look</T>
-        <View className="mt-3 gap-y-3">
-          {suggestions.data?.partners.map((p: any) => (
-            <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
-              <T variant="h3">{p.name}</T>
-              {p.description && (
-                <T variant="body" className="mt-2 text-cloud/80" numberOfLines={2}>
-                  {p.description}
-                </T>
-              )}
-            </Card>
-          ))}
-        </View>
+      <Section className="gap-y-3">
+        <SectionHeading title="Quick Access" />
+        <QuickAccessGrid items={QUICK_ACCESS} />
+      </Section>
+
+      <View className="gap-y-3">
+        <Section>
+          <SectionHeading title="Featured" />
+        </Section>
+        <FeaturedRow items={FEATURED} />
       </View>
 
-      {/* Quick links */}
-      <View className="mt-8">
-        <T variant="sub">Quick access</T>
-        <View className="flex-row flex-wrap gap-3 mt-3">
-          {[
-            { label: 'Auction', href: '/auction', icon: 'trophy-outline' },
-            { label: 'Dining', href: '/dining', icon: 'restaurant-outline' },
-            { label: 'Connections', href: '/connections', icon: 'people-outline' },
-            { label: 'Speakers', href: '/speakers', icon: 'mic-outline' },
-          ].map((q) => (
-            <Pressable
-              key={q.href}
-              onPress={() => router.push(q.href as any)}
-              className="bg-snow/5 border border-snow/10 rounded-card px-4 py-3 flex-row items-center"
-            >
-              <Ionicons name={q.icon as any} size={18} color="#D17F5D" />
-              <T variant="small" className="ml-2 text-snow">{q.label}</T>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-    </Screen>
+      <Section>
+        <NeedHelp />
+      </Section>
+
+      <Section>
+        <ContinueLearning />
+      </Section>
+    </TabScreen>
   );
 }

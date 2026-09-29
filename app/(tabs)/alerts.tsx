@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/lib/store';
 import { IS_DEMO, demoAlerts } from '@/lib/demo';
-import { NAVIGATE, eventEntryHref } from '@/lib/events';
+import { NAVIGATE, eventEntryHref, eventHref } from '@/lib/events';
 import { colors } from '@/lib/theme';
 import type { Attendee } from '@/types/database';
 
@@ -28,22 +28,22 @@ type AlertNotification = {
 };
 
 /** Where a card goes when tapped. Countdown opens the dialog instead. */
-function alertHref(type: string): string | null {
+function alertHref(type: string, eventId: string): string | null {
   switch (type) {
     case 'registration_confirmed':
-      return '/tickets';
+      return '/me/tickets';
     case 'action_required':
-      return '/profile';
+      return '/me/edit';
     case 'speaker_added':
-      return '/speakers';
+      return eventHref(eventId, 'speakers');
     case 'agenda_updated':
     case 'session_starting':
     case 'dont_miss':
-      return '/agenda';
+      return eventHref(eventId, 'agenda');
     case 'people_to_meet':
-      return '/attendees';
+      return `/connect/community/${eventId}`;
     case 'partner_spotlight':
-      return '/partners';
+      return '/connect/partners';
     case 'auction':
       return '/auction';
     default:
@@ -118,7 +118,7 @@ export default function Alerts() {
       setCountdown(n);
       return;
     }
-    const href = alertHref(n.type);
+    const href = alertHref(n.type, n.data?.event_id ?? NAVIGATE.id);
     if (href) router.push(href as never);
   }
 
@@ -155,7 +155,7 @@ export default function Alerts() {
               kind={alertKind(n.type)}
               title={n.title}
               body={n.body}
-              onPress={n.type === 'countdown' || alertHref(n.type) ? () => open(n) : undefined}
+              onPress={n.type === 'countdown' || alertHref(n.type, NAVIGATE.id) ? () => open(n) : undefined}
             />
           ))
         ) : (

@@ -19,18 +19,17 @@ type Icon = keyof typeof Ionicons.glyphMap;
 export const SUPPORT = { name: 'REGROWTH Team', role: 'Event Support' };
 
 /**
- * "Chat with Us" and "Send us a message". In-app chat versus a link-out is
- * Decision 3 on the design epic. Until it is made this opens
- * EXPO_PUBLIC_SUPPORT_URL — a mailto: or WhatsApp link — and falls back to the
- * FAQs, so the button is never dead.
+ * "Chat with Us" and "Send us a message" open the in-app support chat
+ * (Customer Support, 73:453). EXPO_PUBLIC_SUPPORT_URL — a mailto: or WhatsApp
+ * link — overrides it, for running support outside the app.
  */
 export function openSupport() {
   const url = env.supportUrl;
   if (!url) {
-    router.push('/faqs');
+    router.push('/support');
     return;
   }
-  Linking.openURL(url).catch(() => router.push('/faqs'));
+  Linking.openURL(url).catch(() => router.push('/support'));
 }
 
 export type FeaturedItem = {
@@ -44,9 +43,8 @@ export type FeaturedItem = {
 
 /** Home → Featured (132:639). Imagery is a Sprint 12 export. */
 export const FEATURED: FeaturedItem[] = [
-  { key: 'podcast', title: 'Impact & Influence Podcast', subtitle: 'Audio Interview', icon: 'mic-outline', href: '/podcast' },
-  // Templates & Resources is Sprint 11.
-  { key: 'resources', title: 'Leadership Resources', subtitle: 'PDF Handouts', icon: 'document-text-outline' },
+  { key: 'podcast', title: 'Impact & Influence Podcast', subtitle: 'Audio Interview', icon: 'mic-outline', href: '/connect/podcast' },
+  { key: 'resources', title: 'Leadership Resources', subtitle: 'PDF Handouts', icon: 'document-text-outline', href: '/me/resources' },
   { key: 'articles', title: 'Industry Articles', subtitle: 'Lumen Insight', icon: 'newspaper-outline' },
   { key: 'gallery', title: 'Event Photo Gallery', subtitle: 'Live Photos', icon: 'images-outline', href: '/gallery' },
 ];

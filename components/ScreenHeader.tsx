@@ -25,7 +25,8 @@ export function ScreenHeader({
       <View className="flex-row items-start">
         {back && (
           <Pressable
-            onPress={() => router.back()}
+            // A screen opened from a link has no history to pop; go home instead.
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
             hitSlop={12}
             accessibilityLabel="Go back"
             className="pr-4 pt-1"

@@ -3,7 +3,7 @@ import { Text } from 'react-native';
 
 import { TabScreen, Section } from '@/components/TabScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { EventHero } from '@/components/EventHero';
+import { EventHeroPager } from '@/components/EventHeroPager';
 import { TicketCard } from '@/components/TicketCard';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 import { ContinueLearning } from '@/components/ContinueLearning';
@@ -11,23 +11,24 @@ import { NeedHelp } from '@/components/NeedHelp';
 import { QrModal } from '@/components/QrModal';
 import { useAppStore } from '@/lib/store';
 import { useRegistrations } from '@/lib/hooks/useRegistrations';
-import { NAVIGATE } from '@/lib/events';
+import { PRODUCTS, type Product } from '@/lib/events';
 
 /**
  * Events — Figma v2 (129:420) and its REGISTERED variant (134:819).
  *
- * v2 replaces August's two-event carousel and "Beyond Events" row with one
- * featured event. Registered attendees get their ticket under the hero;
- * everyone else gets the registrations-open banner. "Beyond Events" became
- * Continue Learning.
+ * One featured event at a time, swiping to the next ("Choose an event to get
+ * started"). Under the hero, a registered attendee gets that event's ticket;
+ * everyone else gets its registrations-open banner. August's "Beyond Events"
+ * row became Continue Learning.
  */
 export default function Events() {
   const attendee = useAppStore((s) => s.attendee);
   const { tickets, isRegisteredFor } = useRegistrations();
   const [showQr, setShowQr] = useState(false);
+  const [product, setProduct] = useState<Product>(PRODUCTS[0]);
 
-  const registered = isRegisteredFor(NAVIGATE.id);
-  const ticket = tickets.find((t) => t.eventId === NAVIGATE.id);
+  const registered = isRegisteredFor(product.id);
+  const ticket = tickets.find((t) => t.eventId === product.id);
   const name = attendee?.name ?? '';
 
   return (
@@ -39,7 +40,7 @@ export default function Events() {
         </Text>
       </Section>
 
-      <EventHero product={NAVIGATE} registered={registered} />
+      <EventHeroPager products={PRODUCTS} isRegistered={isRegisteredFor} onChange={setProduct} />
 
       {registered && ticket ? (
         <Section>
@@ -47,7 +48,7 @@ export default function Events() {
         </Section>
       ) : (
         // Registration is sold on the website; Sprint 09 links this to checkout.
-        <AnnouncementBanner text={`📣 ${NAVIGATE.short} registrations are now open • Secure your spot`} />
+        <AnnouncementBanner text={`📣 ${product.short} registrations are now open • Secure your spot`} />
       )}
 
       <Section>
@@ -62,8 +63,8 @@ export default function Events() {
         <QrModal
           token={ticket.qrToken}
           name={name}
-          subtitle={[NAVIGATE.short, ticket.ticketTier].filter(Boolean).join(' · ')}
-          note="Present this QR code at the registration desk to gain entry."
+          subtitle={[product.short, ticket.ticketTier].filter(Boolean).join(' · ')}
+          note={product.entry}
           onClose={() => setShowQr(false)}
         />
       )}

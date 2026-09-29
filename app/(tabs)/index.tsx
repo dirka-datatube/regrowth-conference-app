@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { TabScreen, Section } from '@/components/TabScreen';
 import { SearchField } from '@/components/SearchField';
-import { EventHero } from '@/components/EventHero';
+import { EventHeroPager } from '@/components/EventHeroPager';
 import { SectionHeading } from '@/components/SectionHeading';
 import { QuickAccessGrid, type QuickAccessItem } from '@/components/QuickAccessGrid';
 import { FeaturedRow } from '@/components/FeaturedRow';
@@ -14,7 +14,7 @@ import { NeedHelp } from '@/components/NeedHelp';
 import { ContinueLearning } from '@/components/ContinueLearning';
 import { useAppStore } from '@/lib/store';
 import { useRegistrations } from '@/lib/hooks/useRegistrations';
-import { NAVIGATE } from '@/lib/events';
+import { NAVIGATE, PRODUCTS, eventHref } from '@/lib/events';
 import { FEATURED } from '@/lib/content';
 import { canRecordInBackground, needsNativeApp, nativeAppLink } from '@/lib/capture';
 import { colors } from '@/lib/theme';
@@ -23,9 +23,10 @@ import { colors } from '@/lib/theme';
  * Home — Figma v2 "Home Page Navigate" (3:1921) and its REGISTERED variant
  * (132:598).
  *
- * The featured event is Navigate, as in both comps; registration decides the
- * hero's badge and call to action. The Study Tour variant (172:526) is the same
- * screen with STUDY_TOUR passed to the hero.
+ * The hero leads with the event the attendee is registered for, and swipes to
+ * the other — the Navigate comps and their Study Tour variants (172:526 /
+ * 180:588) in one screen. Registration decides each hero's badge and call to
+ * action.
  *
  * August's live panels (happening now, up next, people to meet) move to the
  * event sub-app in Sprint 10, where the comp puts them; their hooks stay in
@@ -38,13 +39,14 @@ const QUICK_ACCESS: QuickAccessItem[] = [
   { label: 'Insights', icon: 'bulb-outline', href: '/insights' },
   { label: 'Connect', icon: 'people-outline', href: '/connect' },
   { label: 'Your Profile', icon: 'person-outline', href: '/me' },
-  // Weather is an event sub-app screen (37:26) — Sprint 10.
-  { label: 'Weather', icon: 'rainy-outline' },
+  { label: 'Weather', icon: 'rainy-outline', href: eventHref(NAVIGATE.id, 'weather') },
 ];
 
 export default function Home() {
   const attendee = useAppStore((s) => s.attendee);
   const { isRegisteredFor } = useRegistrations();
+  // The event you hold a ticket for leads (Home ST variants, 172:526 / 180:588).
+  const heroes = [...PRODUCTS].sort((a, b) => Number(isRegisteredFor(b.id)) - Number(isRegisteredFor(a.id)));
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [q, setQ] = useState('');
@@ -110,7 +112,7 @@ export default function Home() {
 
       <View className="gap-y-1">
         <Text className="text-center font-data text-[16px] text-snow">Your Event Experience Starts Here</Text>
-        <EventHero product={NAVIGATE} registered={isRegisteredFor(NAVIGATE.id)} />
+        <EventHeroPager products={heroes} isRegistered={isRegisteredFor} />
       </View>
 
       <Section className="gap-y-3">

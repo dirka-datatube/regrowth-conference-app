@@ -53,7 +53,7 @@ export default function Connect() {
                 tone={tone}
                 locked={!open}
                 onPress={() =>
-                  open ? router.push(`/attendees?event=${product.id}` as never) : router.navigate('/events')
+                  open ? router.push(`/connect/community/${product.id}` as never) : router.navigate('/events')
                 }
               />
             );
@@ -64,21 +64,21 @@ export default function Connect() {
           title="Find A Referral"
           body="Discover trusted recommendations and connect with professionals across the community."
         >
-          <FeatureButton label="Explore Opportunities" />
+          <FeatureButton label="Explore Opportunities" onPress={() => router.push('/connect/referral')} />
         </FeatureCard>
 
         <FeatureCard
           title="Impact & Influence Podcast"
           body="Listen to inspiring conversations, leadership insights and real-world success stories."
         >
-          <FeatureButton label="Start Listening Now" onPress={() => router.push('/podcast')} />
+          <FeatureButton label="Start Listening Now" onPress={() => router.push('/connect/podcast')} />
         </FeatureCard>
 
         <FeatureCard
           title="REGROWTH Partners"
           body="Explore our trusted partners and discover solutions to support your business growth."
         >
-          <FeatureButton label="Meet Our Partners" onPress={() => router.push('/partners')} />
+          <FeatureButton label="Meet Our Partners" onPress={() => router.push('/connect/partners')} />
         </FeatureCard>
       </View>
     </TabScreen>

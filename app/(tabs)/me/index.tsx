@@ -98,7 +98,7 @@ export default function Me() {
           line={[attendee?.role, attendee?.company].filter(Boolean).join(' | ')}
           photoUrl={attendee?.photo_url}
           chip={primaryProduct ? `${primaryProduct.short.toUpperCase()} ATTENDEE` : null}
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push('/me/edit')}
         />
       </Section>
 
@@ -124,41 +124,42 @@ export default function Me() {
       </Section>
 
       <Section className="gap-y-3">
-        <MenuRow icon="ticket-outline" title="My Tickets" subtitle={ticketLine} onPress={() => router.push('/tickets')} />
+        <MenuRow icon="ticket-outline" title="My Tickets" subtitle={ticketLine} onPress={() => router.push('/me/tickets')} />
         <MenuRow
           icon="bookmark-outline"
           title="Saved Sessions"
           subtitle={counts ? `${counts.savedSessions} Scheduled Events` : 'Your planned sessions'}
-          onPress={() => router.push('/agenda')}
+          onPress={() => router.push('/me/saved')}
         />
         <MenuRow
           icon="people-outline"
           title="Networking Connections"
           subtitle={counts ? `${counts.connections} Connections` : 'Everyone you have met'}
-          onPress={() => router.push('/connections')}
+          onPress={() => router.push('/me/connections')}
         />
         <MenuRow
           icon="folder-open-outline"
           title="Templates & Resources"
           subtitle="Tools & resources to support your growth"
+          onPress={() => router.push('/me/resources')}
         />
         <MenuRow
           icon="briefcase-outline"
           title="REGROWTH Services"
           subtitle="Discover how we can support your business"
-          onPress={() => router.push('/solutions')}
+          onPress={() => router.push('/me/services')}
         />
         <MenuRow
           icon="business-outline"
           title="REGROWTH Partners"
           subtitle="Explore our trusted partners"
-          onPress={() => router.push('/partners')}
+          onPress={() => router.push('/connect/partners')}
         />
         <MenuRow
           icon="settings-outline"
           title="App Settings"
           subtitle="Notifications, Privacy & Sync"
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push('/me/settings')}
         />
         <InstallPrompt />
       </Section>

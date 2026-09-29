@@ -39,7 +39,7 @@ export function EventHero({ product, registered }: { product: Product; registere
         </View>
 
         <Pressable
-          onPress={() => router.push(eventEntryHref(product.id) as never)}
+          onPress={() => router.push(eventEntryHref(product.id, registered) as never)}
           accessibilityRole="button"
           accessibilityLabel={`${cta} — ${product.short}`}
           className="absolute bottom-[24px] left-[32px] h-[72px] w-[219px] items-center justify-center rounded-pill border border-glass-line bg-snow/5 backdrop-blur-2xl"

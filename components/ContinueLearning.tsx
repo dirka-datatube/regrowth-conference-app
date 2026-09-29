@@ -22,7 +22,7 @@ export function ContinueLearning() {
           Explore REGROWTH’s workshops, online training and leadership development programs.
         </Text>
         <Pressable
-          onPress={() => router.push('/solutions')}
+          onPress={() => router.push('/me/services')}
           accessibilityRole="button"
           className="rounded-cta bg-ocean px-4 py-2"
         >

@@ -52,7 +52,7 @@ export default function BadgeLink() {
       });
       if (error) throw error;
     },
-    onSuccess: () => router.replace('/connections'),
+    onSuccess: () => router.replace('/me/connections'),
   });
 
   let title = 'REGROWTH event badge';

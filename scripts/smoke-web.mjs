@@ -57,7 +57,7 @@ const PAGES = [
   { path: '/insights', name: 'insights', both: ['Insights'] },
   { path: '/connect', name: 'connect', both: ['Attendee Networking', 'Navigate 2027 Community', 'Meet Our Partners'] },
   { path: '/me', name: 'profile', registered: ['VERIFIED BADGE', 'NAVIGATE 2027 ATTENDEE'], unregistered: ['No active tickets'], both: ['My Tickets', 'App Settings'] },
-  { path: '/tickets', name: 'tickets', tabBar: false, registered: ['Study Tour 2027 Badge'], unregistered: ['No active tickets'], both: ['Fastpass Entry Gateway'] },
+  { path: '/me/tickets', name: 'tickets', registered: ['Study Tour 2027 Badge'], unregistered: ['No active tickets'], both: ['Fastpass Entry Gateway'] },
   // A phone camera opening a badge URL (lib/qr.ts).
   { path: '/c/demoqr87654321', name: 'scanned-badge', tabBar: false, both: ['James Patel', 'Connect'] },
 ];

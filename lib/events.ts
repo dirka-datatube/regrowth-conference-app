@@ -46,11 +46,19 @@ export function productFor(eventId: string): Product | undefined {
   return PRODUCTS.find((p) => p.id === eventId);
 }
 
+/** The screens of an event's guide, under the Events tab. */
+export type EventScreen = 'welcome' | 'agenda' | 'speakers' | 'map' | 'hotel' | 'pack' | 'weather';
+
+/** An event's guide: its home (146:2498 / 211:872), or one of its screens. */
+export function eventHref(eventId: string, screen?: EventScreen) {
+  return screen ? `/events/${eventId}/${screen}` : `/events/${eventId}`;
+}
+
 /**
- * Where ACCESS EVENT and GET STARTED go. Sprint 10 builds the event sub-app
- * (Navigate Home, 146:2498); until then both land on that event's agenda,
- * which is where the August Events carousel sent people.
+ * Where the hero's call to action goes. ACCESS EVENT opens the event's home;
+ * GET STARTED opens its welcome screen (34:1421), which introduces the event
+ * to someone not yet registered.
  */
-export function eventEntryHref(eventId: string) {
-  return `/agenda?event=${eventId}`;
+export function eventEntryHref(eventId: string, registered = true) {
+  return eventHref(eventId, registered ? undefined : 'welcome');
 }

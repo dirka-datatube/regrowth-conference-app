@@ -1,9 +1,13 @@
-// Generates an AI summary for an attendee's session notes after the session
-// ends. Called by client when the attendee opens a finished-session note,
-// or by pg_cron 30 min after a session's end_at.
+// Generates an AI summary for an attendee's note. Called from the app by the
+// note's author ("Summarise with AI" on the note detail).
+//
+// The author comes from the caller's JWT, never the request: the note must
+// belong to them, or anyone signed in could read someone else's note back as
+// a summary by sending its id.
 
 import { corsHeaders } from '../_shared/cors.ts';
 import { adminClient } from '../_shared/supabase.ts';
+import { requireAttendee } from '../_shared/auth.ts';
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const MODEL = 'claude-sonnet-4-5';
@@ -24,6 +28,7 @@ Deno.serve(async (req) => {
   try {
     const { note_id }: { note_id: string } = await req.json();
     const supabase = adminClient();
+    const { attendee } = await requireAttendee(req, supabase);
 
     const { data: note, error } = await supabase
       .from('notes')
@@ -33,8 +38,9 @@ Deno.serve(async (req) => {
            speakers:session_speakers(speaker:speakers(name, title)))`,
       )
       .eq('id', note_id)
-      .single();
-    if (error || !note) throw new Error('Note not found');
+      .eq('attendee_id', attendee.id)
+      .maybeSingle();
+    if (error || !note) throw new Error('NOTE_NOT_FOUND');
 
     const sessionTitle = (note as any).session?.title ?? 'Session';
     const sessionAbstract = (note as any).session?.abstract ?? '';
@@ -86,8 +92,11 @@ Produce the summary now.`;
       headers: { ...corsHeaders, 'content-type': 'application/json' },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
+    const msg = String(err instanceof Error ? err.message : err);
+    const status =
+      msg === 'UNAUTHENTICATED' ? 401 : msg === 'NOT_AN_ATTENDEE' ? 403 : msg === 'NOTE_NOT_FOUND' ? 404 : 500;
+    return new Response(JSON.stringify({ error: msg }), {
+      status,
       headers: { ...corsHeaders, 'content-type': 'application/json' },
     });
   }

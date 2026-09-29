@@ -11,9 +11,10 @@ import { LEGAL_DOCS, isLegalDoc } from '@/lib/legal';
 /**
  * Terms & Conditions and Privacy Policy outside the tabs — `/legal/terms` and
  * `/legal/privacy` — so they can be read before signing in (the sign-up screen
- * links here). The same draft copy as /me/terms and /me/privacy (227:2863 /
- * 227:2808), full screen with the header's back chevron; opened straight from
- * a link, back goes to the start.
+ * links here). The same draft copy as /me/terms and /me/privacy, full screen
+ * with the header's back chevron; opened straight from a link, back goes to
+ * the start. Built from the frame names and v2 patterns; re-check against
+ * 227:2863 and 227:2808 when Figma reads are available.
  */
 export default function Legal() {
   const { doc } = useLocalSearchParams<{ doc: string }>();

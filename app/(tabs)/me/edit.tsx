@@ -60,6 +60,7 @@ function EditForm({ attendee, profile }: { attendee: Attendee | null; profile: A
   const [photo, setPhoto] = useState<PhotoChange>({ kind: 'keep' });
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   const upload = useSettingsPhotoUpload();
   const save = useSettingsSaveProfile();
@@ -104,34 +105,39 @@ function EditForm({ attendee, profile }: { attendee: Attendee | null; profile: A
 
   async function submit() {
     setTried(true);
+    setFailure(null);
     if (!first.trim()) return;
+
+    let photoUrl: string | null | undefined;
+    if (photo.kind === 'new') {
+      try {
+        photoUrl = await upload.uploadAsync(photo.photo);
+      } catch {
+        setFailure('We couldn’t upload your photo. Try again, or undo the new photo and save the rest.');
+        return;
+      }
+    }
+    if (photo.kind === 'remove') photoUrl = null;
+
+    const shared = {
+      role: orNull(role),
+      company: orNull(company),
+      ...(photoUrl !== undefined ? { photo_url: photoUrl } : {}),
+    };
     try {
-      let photoUrl: string | null | undefined;
-      if (photo.kind === 'new') photoUrl = await upload.uploadAsync(photo.photo);
-      if (photo.kind === 'remove') photoUrl = null;
-      const shared = {
-        role: orNull(role),
-        company: orNull(company),
-        ...(photoUrl !== undefined ? { photo_url: photoUrl } : {}),
-      };
       await save.saveAsync({
         attendee: attendee
           ? { name: fullName, bio: orNull(bio), interests, dietary: orNull(dietary), ...shared }
           : null,
         profile: { first_name: first.trim(), last_name: orNull(last), ...shared },
       });
-      if (router.canGoBack()) router.back();
-      else router.replace('/me');
     } catch {
-      // Shown under the Save button from the mutation's error.
+      setFailure('We couldn’t save your changes. Check your connection and try again.');
+      return;
     }
+    if (router.canGoBack()) router.back();
+    else router.replace('/me');
   }
-
-  const failure = upload.error
-    ? 'We couldn’t upload your photo. Try again, or undo the new photo and save the rest.'
-    : save.error
-      ? 'We couldn’t save your changes. Check your connection and try again.'
-      : null;
 
   return (
     <>

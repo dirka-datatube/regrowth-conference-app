@@ -29,6 +29,8 @@ export type Database = {
       admin_users: { Row: AdminUser; Insert: Partial<AdminUser>; Update: Partial<AdminUser> };
       audit_log: { Row: AuditLog; Insert: Partial<AuditLog>; Update: Partial<AuditLog> };
       profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
+      support_messages: { Row: SupportMessageRow; Insert: Partial<SupportMessageRow>; Update: Partial<SupportMessageRow> };
+      app_feedback: { Row: AppFeedback; Insert: Partial<AppFeedback>; Update: Partial<AppFeedback> };
     };
   };
 };
@@ -318,6 +320,37 @@ export type Profile = {
   role: string | null;
   created_at: string;
   updated_at: string;
+};
+
+/**
+ * Migration 20260929000200. The in-app support chat (/support): one thread per
+ * account. `user_id` defaults to the caller; staff replies carry the thread
+ * owner's id with `from_staff` set.
+ */
+export type SupportMessageRow = {
+  id: string;
+  user_id: string;
+  body: string;
+  from_staff: boolean;
+  needs_human: boolean;
+  created_at: string;
+};
+
+/**
+ * Migration 20260929000300. Rate App ratings and Contact messages. `user_id`
+ * defaults to the caller; the app only inserts.
+ */
+export type AppFeedback = {
+  id: string;
+  user_id: string | null;
+  kind: 'rating' | 'contact';
+  rating: number | null;
+  tags: string[];
+  subject: string | null;
+  message: string | null;
+  email: string | null;
+  name: string | null;
+  created_at: string;
 };
 
 export type AdminUser = {

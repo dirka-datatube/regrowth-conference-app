@@ -18,10 +18,7 @@ export function LegalDocument({
 }) {
   return (
     <View className="gap-y-6">
-      <View
-        accessibilityRole="alert"
-        className="flex-row items-center gap-x-2.5 rounded-cta border border-alert-reminder/50 bg-alert-reminder/10 px-3.5 py-2.5"
-      >
+      <View className="flex-row items-center gap-x-2.5 rounded-cta border border-alert-reminder/50 bg-alert-reminder/10 px-3.5 py-2.5">
         <Ionicons name="alert-circle-outline" size={18} color={colors.alertReminder} />
         <Text className="flex-1 font-data text-[12px] font-semibold text-snow">{LEGAL_DRAFT_NOTICE}</Text>
       </View>

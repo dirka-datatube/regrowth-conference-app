@@ -6,7 +6,6 @@ import { useAppStore } from '@/lib/store';
 import { IS_DEMO, DEMO_REGISTERED } from '@/lib/demo';
 import { DEMO_CONNECTION_IDS, DEMO_EXTRA_PEOPLE, demoCardDetails } from '@/lib/demo-profile';
 import { demoCommunityProfile, demoContact } from '@/lib/demo-connect';
-import { tokenFromQr } from '@/lib/qr';
 import type { ListQuery } from '@/lib/hooks/useSavedSessions';
 import type { ConnectionSource } from '@/types/database';
 
@@ -15,6 +14,11 @@ import type { ConnectionSource } from '@/types/database';
  * with, and the business cards they have photographed but not yet matched to
  * an attendee (`pending_connections`, written by the business-card-ocr
  * function).
+ *
+ * Connecting itself happens elsewhere: a badge scanned on /scan, or opened by
+ * a phone's camera, lands on /c/[token], which calls qr-connect and comes back
+ * here; a profile's Connect button uses useCommunityConnect. So both lists
+ * re-read whenever this screen mounts or comes back into view.
  */
 
 export type ConnectionPerson = {
@@ -117,6 +121,7 @@ export function useConnections(): ListQuery<Connection> {
   const query = useQuery({
     queryKey: connectionsKey(attendeeId),
     enabled: !!attendeeId,
+    ...(IS_DEMO ? {} : { staleTime: 0 }),
     queryFn: async (): Promise<Connection[]> => {
       if (IS_DEMO) return DEMO_REGISTERED ? demoConnectionList() : [];
       const { data, error } = await supabase
@@ -155,7 +160,7 @@ export function useConnectionsCards(): ListQuery<BusinessCard> {
     enabled: !!attendeeId,
     // Demo cards exist only in the cache (captured on /me/card, see below), so
     // a demo refetch would lose them.
-    ...(IS_DEMO ? { staleTime: Infinity } : {}),
+    staleTime: IS_DEMO ? Infinity : 0,
     queryFn: async (): Promise<BusinessCard[]> => {
       if (IS_DEMO) return [];
       const { data, error } = await supabase
@@ -237,42 +242,5 @@ export function useConnectionsCardScan(): CardScan {
     isPending: mutation.isPending as boolean,
     error: mutation.error as Error | null,
     reset: mutation.reset as () => void,
-  };
-}
-
-/**
- * Connect by badge QR — the pre-v2 Connections screen's scanner logic, kept
- * whole for any in-app scanner to call. Accepts the badge URL or a bare token
- * (lib/qr.ts); resolves to `{ already: true }` when the two were connected
- * before. (The badge link /c/[token] runs the same qr-connect call.)
- */
-export function useConnectionsQrConnect(): {
-  connect: (scanned: string) => Promise<{ already: boolean }>;
-  isPending: boolean;
-} {
-  const attendeeId = useAppStore((s) => s.attendee?.id);
-  const qc = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: async (scanned: string): Promise<{ already: boolean }> => {
-      const token = tokenFromQr(scanned);
-      if (!token) throw new Error('That QR code is not a REGROWTH badge.');
-      if (IS_DEMO) return { already: false };
-      if (!attendeeId) throw new Error('Your profile is still loading. Try again in a moment.');
-      const { data, error } = await supabase.functions.invoke('qr-connect', {
-        body: { scanner_id: attendeeId, scanned_qr_token: token },
-      });
-      if (error) throw error;
-      return { already: !!(data as { already?: boolean } | null)?.already };
-    },
-    onSuccess: () => {
-      if (IS_DEMO) return;
-      qc.invalidateQueries({ queryKey: connectionsKey(attendeeId) });
-      // The Profile menu's "{n} Connections" (useProfileCounts).
-      qc.invalidateQueries({ queryKey: ['profile-counts', attendeeId] });
-    },
-  });
-  return {
-    connect: mutation.mutateAsync as (scanned: string) => Promise<{ already: boolean }>,
-    isPending: mutation.isPending as boolean,
   };
 }

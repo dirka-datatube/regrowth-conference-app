@@ -15,14 +15,16 @@ import { NAVIGATE } from '@/lib/events';
 
 /**
  * Kylie's 24 connections, most recent first — the Profile menu's
- * "24 Connections" (demoProfileCounts in lib/demo.ts). The first fifteen are
- * the Connect community's people (lib/demo-connect.ts), so a tap opens their
- * profile; the last nine are DEMO_EXTRA_PEOPLE below.
+ * "24 Connections" (demoProfileCounts in lib/demo.ts). Twelve are the Connect
+ * community's people (lib/demo-connect.ts) and twelve are DEMO_EXTRA_PEOPLE
+ * below, which lib/demo-connect.ts adds to the community, so every card opens
+ * a profile. James (a2, the person a scanned demo badge resolves to), Daniel
+ * (a4) and Mia (a6) stay unconnected, so the demo still shows "Connect".
  */
 export const DEMO_CONNECTION_IDS = [
-  'a3', 'a2', 'a7', 'a10', 'a4', 'a6', 'a9', 'a8', 'a5', 'a11',
+  'a3', 'a7', 'a10', 'a9', 'a8', 'a5', 'a11',
   'st1', 'st2', 'st3', 'st4', 'st5',
-  'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20',
+  'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'a21', 'a22', 'a23',
 ];
 
 export type DemoPerson = {
@@ -70,6 +72,12 @@ export const DEMO_EXTRA_PEOPLE: DemoPerson[] = [
     ['sales', 'prospecting'], 'Three years in and building a referral business one conversation at a time.'),
   extra('a20', 'Emily Brooks', 'Business Coach', 'Brooks Coaching', 'emily@brookscoaching.example',
     ['coaching', 'growth'], 'Coaches principals on planning, numbers and the habits that hold a year together.'),
+  extra('a21', 'Oscar Nguyen', 'Property Manager', 'Northside Rentals', 'oscar@northsiderentals.example',
+    ['systems', 'service'], 'Looks after two hundred doors and is rebuilding how his team handles maintenance.'),
+  extra('a22', 'Grace Wilson', 'Operations Manager', 'Wilson & Partners', 'grace@wilsonpartners.example',
+    ['operations', 'technology'], 'Keeps the office running and the tech stack honest.'),
+  extra('a23', 'Lucas Martin', 'Auctioneer', 'Martin Auctions', 'lucas@martinauctions.example',
+    ['auctions', 'negotiation'], 'Calls a dozen auctions a week and trains agents to run the room.'),
 ];
 
 // --- Business card capture (/me/card) -----------------------------------------

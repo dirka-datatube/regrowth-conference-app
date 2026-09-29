@@ -3,6 +3,7 @@ import type { CommunityContact, CommunityMember, CommunityProfile } from '@/lib/
 import type { SupportMessage } from '@/lib/support';
 import { demoOtherAttendees, demoPartners, demoPodcast } from '@/lib/demo';
 import { NAVIGATE, STUDY_TOUR } from '@/lib/events';
+import { DEMO_CONNECTION_IDS, DEMO_EXTRA_PEOPLE } from '@/lib/demo-profile';
 
 /**
  * Demo fixtures for the Connect sub-screens, the scanner and support chat.
@@ -97,6 +98,8 @@ const PEOPLE: DemoPerson[] = [
     'Wins new listings and new landlords. Always keen to compare pipelines.',
     'ava@harrisrealty.example',
   ),
+  // Kylie's other connections (lib/demo-profile.ts), so their cards open.
+  ...DEMO_EXTRA_PEOPLE,
 ];
 
 const byName = (a: CommunityMember, b: CommunityMember) => a.name.localeCompare(b.name);
@@ -119,8 +122,11 @@ export function demoContact(id: string): CommunityContact | null {
   return p ? { email: p.email, linkedin_url: p.linkedin_url } : null;
 }
 
-/** Kylie already knows Olivia, so the demo shows both profile states. */
-export const demoConnectedIds = ['a3'];
+/**
+ * Kylie's connections, the same list as Profile → Networking Connections. James,
+ * Daniel and Mia are not among them, so the demo shows both profile states.
+ */
+export const demoConnectedIds = DEMO_CONNECTION_IDS;
 
 // --- Partners --------------------------------------------------------------
 

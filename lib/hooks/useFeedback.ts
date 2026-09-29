@@ -40,9 +40,9 @@ export function useFeedbackSubmit(): FeedbackSubmit {
               message: input.message.trim(),
             };
       const { error } = await supabase
-        // app_feedback is newer than the hand-written types/database.ts, whose
-        // shape types every write as `never` anyway (see app/(tabs)/alerts.tsx).
-        .from('app_feedback' as never)
+        .from('app_feedback')
+        // insert() is typed `never` by the hand-written schema (see
+        // app/(tabs)/alerts.tsx).
         .insert(row as never);
       if (error) throw error;
     },

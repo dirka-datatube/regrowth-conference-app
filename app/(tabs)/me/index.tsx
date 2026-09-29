@@ -11,22 +11,18 @@ import { NeedHelp } from '@/components/NeedHelp';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { useAppStore } from '@/lib/store';
 import { useRegistrations } from '@/lib/hooks/useRegistrations';
+import { displayName } from '@/lib/hooks/useProfile';
 import { useProfileCounts } from '@/lib/hooks/useProfileCounts';
 import { NAVIGATE, productFor } from '@/lib/events';
 import { needsNativeApp, nativeAppLink } from '@/lib/capture';
-import { signOut } from '@/lib/auth';
 import { colors } from '@/lib/theme';
 
 /**
  * Profile — Figma v2 (34:1423). The route stays `me`.
  *
  * Profile card, the entry badge for the attendee's first ticket, and the
- * seven-row menu. Rows whose screens are not built yet (Templates &
- * Resources — Sprint 11) stay in the list, dimmed. The comp moves capture into
- * the header: mic records a voice note, camera takes a photo note.
- *
- * Sign out has no place in the comp — it belongs to App Settings (220:2103),
- * built in Sprint 11 — so it sits quietly at the foot until then.
+ * seven-row menu. The comp moves capture into the header: mic records a voice
+ * note, camera takes a photo note. Sign out lives in App Settings (220:2103).
  */
 
 function HeaderButton({
@@ -52,10 +48,11 @@ function HeaderButton({
 
 export default function Me() {
   const attendee = useAppStore((s) => s.attendee);
+  const profile = useAppStore((s) => s.profile);
   const { tickets } = useRegistrations();
   const { data: counts } = useProfileCounts();
 
-  const name = attendee?.name ?? 'Your profile';
+  const name = displayName(profile, attendee) || 'Your profile';
   const primary = tickets[0];
   const primaryProduct = primary ? productFor(primary.eventId) : undefined;
   const eventLabel = primaryProduct?.short ?? 'Event';
@@ -168,11 +165,6 @@ export default function Me() {
         <NeedHelp />
       </Section>
 
-      <Section className="items-center">
-        <Pressable onPress={() => signOut()} accessibilityRole="button" hitSlop={10} className="px-4 py-2">
-          <Text className="font-data text-[13px] text-quiet">Sign out</Text>
-        </Pressable>
-      </Section>
     </TabScreen>
   );
 }

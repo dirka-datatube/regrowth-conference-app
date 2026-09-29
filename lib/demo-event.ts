@@ -561,7 +561,7 @@ export function demoGuideSpeakers(eventId: string): GuideSpeaker[] {
 }
 
 /** Sessions the demo attendee has already saved; toggles stay in this browser. */
-export const DEMO_SCHEDULE_PICKS = ['sess1', 'sess2', 'st3'];
+export const DEMO_SCHEDULE_PICKS = ['sess1', 'sess2', 'sess4', 'sess7', 'sess10', 'sess14', 'st3', 'st4'];
 
 export const DEMO_SPEAKER_FOLLOWS = ['s1'];
 

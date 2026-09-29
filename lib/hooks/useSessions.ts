@@ -71,7 +71,7 @@ export function useSchedulePicks(): {
   const data: string[] | undefined = query.data;
   const ids = useMemo(() => data ?? [], [data]);
 
-  const { mutate } = useMutation<void, Error, PickChange, { previous?: string[] }>({
+  const { mutate } = useMutation<void, Error, PickChange, { previous?: string[]; bumped: number }>({
     mutationFn: async ({ sessionId, save }) => {
       if (IS_DEMO) return;
       if (!attendeeId) throw new Error('Sign in to save sessions.');
@@ -87,20 +87,33 @@ export function useSchedulePicks(): {
     onMutate: async ({ sessionId, save }) => {
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData(key) as string[] | undefined;
+      const had = (previous ?? []).includes(sessionId);
       qc.setQueryData(key, (current: string[] = []) =>
         save ? (current.includes(sessionId) ? current : [...current, sessionId]) : current.filter((id) => id !== sessionId),
       );
-      return { previous };
+      if (had !== save) bumpSavedCount(save ? 1 : -1);
+      return { previous, bumped: had !== save ? (save ? 1 : -1) : 0 };
     },
-    onError: (_error, _vars, context) => qc.setQueryData(key, context?.previous),
+    onError: (_error, _vars, context) => {
+      qc.setQueryData(key, context?.previous);
+      if (context?.bumped) bumpSavedCount(-context.bumped);
+    },
     onSettled: () => {
+      // Saved Sessions re-reads its list; in demo mode it reads these ids.
+      qc.invalidateQueries({ queryKey: ['saved-sessions'] });
+      // A demo refetch of the ids would reset them to the fixture.
       if (IS_DEMO) return;
       qc.invalidateQueries({ queryKey: key });
-      // Profile's "{n} Scheduled Events" and the Saved Sessions list.
       qc.invalidateQueries({ queryKey: ['profile-counts'] });
-      qc.invalidateQueries({ queryKey: ['saved-sessions'] });
     },
   });
+
+  /** Profile's "{n} Scheduled Events", kept in step until it refetches. */
+  function bumpSavedCount(by: number) {
+    qc.setQueryData(['profile-counts', attendeeId], (old: { savedSessions: number } | undefined) =>
+      old ? { ...old, savedSessions: Math.max(0, old.savedSessions + by) } : old,
+    );
+  }
 
   const isSaved = useCallback((sessionId: string) => ids.includes(sessionId), [ids]);
   const toggle = useCallback(

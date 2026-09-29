@@ -251,7 +251,7 @@ export const demoEvents = [
 
 export const demoNotes: (Note & { session: { id: string; title: string; start_at: string } | null })[] = [
   {
-    id: 'n1', attendee_id: ME_ID, session_id: 'sess1', event_id: EVENT_ID,
+    id: 'n1', attendee_id: ME_ID, session_id: 'sess5', event_id: EVENT_ID,
     title: 'Consistency beats intensity',
     pinned: true, important: true, reminder_at: at(1, 9),
     body: 'Key idea: we win when we show up consistently for our team. The panel kept coming back to rhythm over heroics — weekly one-on-ones that never move, a Monday number everyone can recite, and a follow-up habit that survives a bad week.',
@@ -259,7 +259,7 @@ export const demoNotes: (Note & { session: { id: string; title: string; start_at
     ai_summary_generated_at: new Date().toISOString(),
     follow_up_questions: ['How do we measure consistency?', 'What does showing up look like in practice?'],
     created_at: '', updated_at: new Date().toISOString(),
-    session: { id: 'sess1', title: 'Welcome to Navigate 2027', start_at: at(0, 9) },
+    session: { id: 'sess5', title: 'The Mindset of Top Performers', start_at: at(0, 16) },
   },
   {
     id: 'n2', attendee_id: ME_ID, session_id: null, event_id: EVENT_ID,
@@ -280,13 +280,13 @@ export const demoNotes: (Note & { session: { id: string; title: string; start_at
     session: null,
   },
   {
-    id: 'n4', attendee_id: ME_ID, session_id: 'sess2', event_id: EVENT_ID,
-    title: 'Question for the closing panel',
+    id: 'n4', attendee_id: ME_ID, session_id: 'sess12', event_id: EVENT_ID,
+    title: 'Question for the market outlook panel',
     pinned: false, important: false, reminder_at: null,
     body: 'What is the first thing you cut when the market turns, and what did cutting it cost you the following year?',
     ai_summary: null, ai_summary_generated_at: null, follow_up_questions: [],
     created_at: '', updated_at: at(-1, 11),
-    session: { id: 'sess2', title: 'Closing panel', start_at: at(1, 16) },
+    session: { id: 'sess12', title: 'The Year Ahead: Market Outlook', start_at: at(2, 9) },
   },
 ];
 

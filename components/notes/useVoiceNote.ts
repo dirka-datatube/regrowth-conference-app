@@ -49,12 +49,14 @@ export function useVoiceNote({
   );
   const recorder = useRecorder({ simulateIfUnavailable: IS_DEMO, keepAliveInBackground, onFinish });
 
+  // A simulated recording has no microphone for a speech engine to hear.
   const { run, pause, stop } = transcript;
+  const simulated = recorder.source === 'simulated';
   useEffect(() => {
-    if (recorder.status === 'recording') run();
+    if (recorder.status === 'recording') run(simulated ? 'script' : 'auto');
     else if (recorder.status === 'paused') pause();
     else if (recorder.status === 'idle') stop();
-  }, [recorder.status, run, pause, stop]);
+  }, [recorder.status, simulated, run, pause, stop]);
 
   const startRecorder = recorder.start;
   const start = useCallback(() => {

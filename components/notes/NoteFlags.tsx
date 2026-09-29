@@ -46,7 +46,7 @@ function Flag({
       onPress={onPress}
       accessibilityRole="switch"
       accessibilityLabel={label}
-      accessibilityState={{ checked: on }}
+      aria-checked={on}
       className={`h-8 flex-row items-center gap-x-1.5 rounded-pill border px-3 ${
         on ? 'border-transparent bg-accent-soft' : 'border-card-line'
       }`}

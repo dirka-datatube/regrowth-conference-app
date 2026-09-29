@@ -75,7 +75,6 @@ function RecorderButton({
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={`${label} recording`}
-      accessibilityState={{ disabled: !!disabled }}
       className={`h-6 w-[94px] flex-row items-center justify-center gap-x-1.5 rounded-pill ${
         light ? 'bg-snow/85' : 'bg-earth'
       } ${disabled ? 'opacity-50' : ''}`}

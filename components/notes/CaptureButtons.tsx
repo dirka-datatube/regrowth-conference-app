@@ -33,9 +33,9 @@ function Disc({
     <Pressable
       onPress={onPress}
       hitSlop={4}
-      accessibilityRole="button"
+      accessibilityRole={selected === undefined ? 'button' : 'switch'}
       accessibilityLabel={needsApp ? `${label} — needs the REGROWTH app` : label}
-      accessibilityState={selected === undefined ? undefined : { selected }}
+      aria-checked={selected}
     >
       <View
         className={`h-[38px] w-[41px] items-center justify-center rounded-pill ${tint} ${
@@ -45,7 +45,7 @@ function Disc({
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       {needsApp && (
-        <View className="absolute -right-2 -top-1.5 rounded-pill bg-accent-soft px-1.5 py-px">
+        <View className="absolute -bottom-1.5 -right-2 rounded-pill bg-accent-soft px-1.5 py-px">
           <Text className="font-ui text-meta text-snow">App</Text>
         </View>
       )}

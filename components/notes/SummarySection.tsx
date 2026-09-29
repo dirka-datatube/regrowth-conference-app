@@ -54,7 +54,7 @@ export function SummarySection({
           onPress={onSummarise}
           disabled={disabled}
           accessibilityRole="button"
-          accessibilityState={{ disabled, busy }}
+          aria-busy={busy}
           className={`flex-row items-center justify-center gap-x-2 self-start rounded-cta bg-ocean px-4 py-2.5 ${
             disabled && !busy ? 'opacity-50' : ''
           }`}

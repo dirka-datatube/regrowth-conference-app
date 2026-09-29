@@ -38,6 +38,7 @@ type SpeechEngine = {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
+  onstart: (() => void) | null;
   onresult: ((event: SpeechResultEvent) => void) | null;
   onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
@@ -54,11 +55,6 @@ function speechEngine(): SpeechEngineCtor | null {
     webkitSpeechRecognition?: SpeechEngineCtor;
   };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
-}
-
-/** True when this browser can transcribe as someone speaks. */
-export function hasLiveTranscript(): boolean {
-  return speechEngine() !== null;
 }
 
 function browserLanguage(): string {
@@ -98,8 +94,11 @@ export function appendPhrase(body: string, phrase: string, newParagraph: boolean
 }
 
 export type Transcriber = {
-  /** Start listening, or carry on after pause(). */
-  run(): void;
+  /**
+   * Start listening, or carry on after pause(). `script` skips the speech
+   * engine — a simulated recording has no microphone for it to hear.
+   */
+  run(mode?: 'auto' | 'script'): void;
   pause(): void;
   /** Stop listening. Resolves once the words still in flight have landed. */
   stop(): Promise<void>;
@@ -109,6 +108,9 @@ export type Transcriber = {
 
 // How long stop() waits for an engine to hand over its last words.
 const SETTLE_MS = 1200;
+// An engine that has not started listening by now never will (some browsers
+// accept start() and then stay silent). Long enough for a permission prompt.
+const START_TIMEOUT_MS = 8000;
 
 type TranscriberHandlers = {
   onPhrase: (text: string) => void;
@@ -136,6 +138,8 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
   let engine: SpeechEngine | null = null;
   let restarts: number[] = [];
   let restartTimer: ReturnType<typeof setTimeout> | null = null;
+  let startTimer: ReturnType<typeof setTimeout> | null = null;
+  let engineStarted = false;
   let settle: (() => void) | null = null;
 
   const script = options.script ?? [];
@@ -162,11 +166,14 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
   function clearTimers() {
     if (restartTimer) clearTimeout(restartTimer);
     if (scriptTimer) clearTimeout(scriptTimer);
+    if (startTimer) clearTimeout(startTimer);
     restartTimer = null;
     scriptTimer = null;
+    startTimer = null;
   }
 
   function silence(e: SpeechEngine) {
+    e.onstart = null;
     e.onresult = null;
     e.onerror = null;
     e.onend = null;
@@ -188,6 +195,15 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
     }
   }
 
+  // The engine cannot help this session: stop it and use the fallback.
+  function abandon(e: SpeechEngine) {
+    if (engine === e) engine = null;
+    silence(e);
+    settle?.();
+    settle = null;
+    fallBack();
+  }
+
   function listen(): boolean {
     const Engine = speechEngine();
     if (!Engine) return false;
@@ -199,10 +215,17 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
     }
     const delivered = new Set<number>();
     let lastFinal = '';
+    let heard = false;
+    engineStarted = false;
     e.continuous = true;
     e.interimResults = true;
     e.lang = options.lang ?? browserLanguage();
+    e.onstart = () => {
+      engineStarted = true;
+    };
     e.onresult = (event) => {
+      engineStarted = true;
+      heard = true;
       let pending = '';
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
@@ -224,12 +247,8 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
       setInterim(pending.trim());
     };
     e.onerror = (event) => {
-      if (!FATAL.has(event.error)) return; // no-speech, aborted: onend restarts
-      if (engine === e) engine = null;
-      silence(e);
-      settle?.();
-      settle = null;
-      fallBack();
+      // no-speech and aborted are routine: onend starts a new session.
+      if (FATAL.has(event.error)) abandon(e);
     };
     e.onend = () => {
       if (engine !== e) return;
@@ -240,7 +259,7 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
       }
       settle?.();
       settle = null;
-      if (state === 'running' && source === 'speech') relisten();
+      if (state === 'running' && source === 'speech') relisten(heard);
     };
     try {
       e.start();
@@ -249,15 +268,21 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
       return false;
     }
     engine = e;
+    if (startTimer) clearTimeout(startTimer);
+    startTimer = setTimeout(() => {
+      startTimer = null;
+      if (engine === e && !engineStarted) abandon(e);
+    }, START_TIMEOUT_MS);
     return true;
   }
 
-  // Engines end a session after a stretch of silence; start a new one. One
-  // that keeps ending straight away is broken, so stop trying.
-  function relisten() {
+  // Engines end a session after a stretch of silence (Android after every
+  // utterance); start a new one. One that keeps ending without hearing
+  // anything is broken, so stop trying.
+  function relisten(heard: boolean) {
     const now = Date.now();
-    restarts = restarts.filter((t) => now - t < 15_000);
-    restarts.push(now);
+    restarts = heard ? [] : restarts.filter((t) => now - t < 15_000);
+    if (!heard) restarts.push(now);
     if (restarts.length > 6) {
       fallBack();
       return;
@@ -301,13 +326,13 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
   }
 
   return {
-    run() {
+    run(mode = 'auto') {
       if (disposed || state === 'running') return;
       const resuming = state === 'paused';
       state = 'running';
       if (!resuming) {
         restarts = [];
-        if (listen()) setSource('speech');
+        if (mode === 'auto' && listen()) setSource('speech');
         else fallBack();
         return;
       }
@@ -318,6 +343,12 @@ export function createTranscriber(handlers: TranscriberHandlers, options: Transc
       if (state !== 'running') return;
       state = 'paused';
       clearTimers();
+      if (engine && !engineStarted) {
+        // Never got going: nothing in flight, and it may never end by itself.
+        silence(engine);
+        engine = null;
+        return;
+      }
       // The engine delivers the words in flight, then ends without restarting.
       try {
         engine?.stop();
@@ -402,7 +433,7 @@ export function useLiveTranscript({
     [],
   );
 
-  const run = useCallback(() => get().run(), [get]);
+  const run = useCallback((mode?: 'auto' | 'script') => get().run(mode), [get]);
   const pause = useCallback(() => engine.current?.pause(), []);
   const stop = useCallback(() => engine.current?.stop() ?? Promise.resolve(), []);
 

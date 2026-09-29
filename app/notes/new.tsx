@@ -70,6 +70,8 @@ export default function NewNote() {
     staleTime: 0,
     gcTime: 0,
     retry: 1,
+    // A later change of key keeps the editor open rather than reloading it.
+    placeholderData: (previous) => previous,
     queryFn: async (): Promise<{ note: NoteRecord | null; session: SessionInfo | null }> => {
       const session = opened.session_id ? await fetchSession(opened.session_id).catch(() => null) : null;
       if (registration !== 'registered') return { note: null, session };

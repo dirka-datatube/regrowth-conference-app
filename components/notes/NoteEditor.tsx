@@ -4,19 +4,20 @@ import { colors } from '@/lib/theme';
 /**
  * The note body: borderless, Butler on midnight (93:1081), always editable.
  *
- * A transparent TextInput sits over a mirror of its own text. The mirror
- * sizes the editor to its content — a web textarea does not grow as text
- * arrives — and carries what the comp draws after the last word while
- * recording (134:998): the words still being heard, then a quiet "Typing in
- * the background…". Both layers share one set of type metrics, so the cue
- * lands exactly where the next words will.
+ * The TextInput sits over an invisible copy of its own text. The copy sizes
+ * the editor to its content — a web textarea does not grow as text arrives —
+ * and carries what the comp draws after the last word while recording
+ * (134:998): the words still being heard, then a quiet "Typing in the
+ * background…". Both layers share one set of type metrics, so the cue lands
+ * exactly where the next words will.
  */
 
 const TYPE = 'font-body text-[15px] leading-[20px]';
 const INVISIBLE: TextStyle = { color: 'transparent' };
-// No scrollbar may steal width from the input, or its lines would wrap
-// differently from the mirror's.
-const INPUT: TextStyle = { overflow: 'hidden' };
+// The input's text must sit exactly on its invisible copy: no scrollbar to
+// steal width, and none of the padding native multiline inputs add by default
+// (iOS sets paddingTop, which the shorthand alone would not override).
+const INPUT: TextStyle = { overflow: 'hidden', padding: 0, paddingTop: 0, paddingBottom: 0 };
 
 /** What goes between the note and the incoming words — see appendPhrase. */
 function separator(value: string, newParagraph: boolean): string {
@@ -33,6 +34,7 @@ export function NoteEditor({
   listening,
   newParagraph,
   placeholder,
+  compact = false,
 }: {
   value: string;
   onChangeText: (text: string) => void;
@@ -43,10 +45,12 @@ export function NoteEditor({
   /** The next phrase starts a paragraph (the first of a recording). */
   newParagraph: boolean;
   placeholder: string;
+  /** A shorter blank editor, for a screen with more below the note. */
+  compact?: boolean;
 }) {
   const sep = separator(value, newParagraph);
   return (
-    <View className="min-h-[200px]">
+    <View className={compact ? 'min-h-[96px]' : 'min-h-[200px]'}>
       <Text className={`${TYPE} text-snow`} selectable={false} aria-hidden>
         <Text style={INVISIBLE}>{value}</Text>
         {interim ? (

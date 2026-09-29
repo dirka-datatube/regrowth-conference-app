@@ -9,7 +9,8 @@ import { isInAppBrowser } from '@/lib/capture';
  *
  *   • Web: getUserMedia + MediaRecorder, with an AnalyserNode for the live
  *     level. The browser records only while the page is open and visible
- *     (lib/capture.ts), so hiding the page pauses the recording and says why.
+ *     (lib/capture.ts): a wake lock keeps the screen on where the browser
+ *     allows one, and hiding the page pauses the recording and says why.
  *   • Native: expo-av Audio.Recording with metering. `keepAliveInBackground`
  *     sets `staysActiveInBackground`, which with UIBackgroundModes "audio"
  *     (app.json) keeps recording with the screen locked.
@@ -49,9 +50,17 @@ const MAX_LEVELS = 160; // wider than any phone's waveform
 const FLOOR = 0.04; // the level drawn when there is nothing to meter
 
 class RecorderError extends Error {
-  constructor(readonly reason: RecorderFailure) {
+  reason: RecorderFailure;
+  constructor(reason: RecorderFailure) {
     super(reason);
+    this.reason = reason;
   }
+}
+
+// Read by property, not instanceof: transpiled subclasses of Error do not
+// always keep their prototype.
+function reasonOf(err: unknown): RecorderFailure {
+  return (err as { reason?: RecorderFailure } | null)?.reason ?? 'failed';
 }
 
 type Driver = {
@@ -98,7 +107,7 @@ function failureMessage(reason: RecorderFailure): string {
   }
 }
 
-export const SCREEN_OFF_NOTICE =
+const SCREEN_OFF_NOTICE =
   'Paused while the screen was off — your browser stops recording when the screen locks. Tap Resume to carry on.';
 const DEVICE_LOST =
   'The microphone disconnected, so recording stopped. What was captured is kept with this note.';
@@ -481,7 +490,7 @@ export function useRecorder({
       // Cancelled by stop() (which already went idle), or a real failure.
       if (cancelStart.current) return false;
       if (!options.current.simulateIfUnavailable) {
-        const reason = err instanceof RecorderError ? err.reason : 'failed';
+        const reason = reasonOf(err);
         if (mounted.current) setError({ reason, message: failureMessage(reason) });
         setBoth('idle');
         return false;
@@ -539,6 +548,28 @@ export function useRecorder({
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [pauseWith]);
+
+  // Web: hold the screen awake while recording. A phone left on the table
+  // would otherwise dim and lock mid-session, and the browser stops capturing.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || status !== 'recording' || typeof navigator === 'undefined') return;
+    type Sentinel = { release(): Promise<void> };
+    const wakeLock = (navigator as unknown as { wakeLock?: { request(type: 'screen'): Promise<Sentinel> } }).wakeLock;
+    if (typeof wakeLock?.request !== 'function') return;
+    let sentinel: Sentinel | null = null;
+    let released = false;
+    wakeLock
+      .request('screen')
+      .then((s) => {
+        if (released) s.release().catch(() => undefined);
+        else sentinel = s;
+      })
+      .catch(() => undefined); // not allowed here (a hidden page, a policy): record regardless
+    return () => {
+      released = true;
+      sentinel?.release().catch(() => undefined);
+    };
+  }, [status]);
 
   // Web: closing or reloading the tab mid-recording loses it — ask first.
   useEffect(() => {
@@ -691,7 +722,12 @@ export const useDeviceCaptures = create<DeviceCaptures>((set) => ({
   add: (key, capture) =>
     set((s) => ({ byKey: { ...s.byKey, [key]: [...(s.byKey[key] ?? []), capture] } })),
   remove: (key, id) =>
-    set((s) => ({ byKey: { ...s.byKey, [key]: (s.byKey[key] ?? []).filter((c) => c.id !== id) } })),
+    set((s) => {
+      const gone = s.byKey[key]?.find((c) => c.id === id);
+      // A web recording is held in memory until its blob: URL is let go.
+      if (gone?.uri?.startsWith('blob:') && typeof URL !== 'undefined') URL.revokeObjectURL(gone.uri);
+      return { byKey: { ...s.byKey, [key]: (s.byKey[key] ?? []).filter((c) => c.id !== id) } };
+    }),
   rekey: (from, to) =>
     set((s) => {
       const moving = s.byKey[from];

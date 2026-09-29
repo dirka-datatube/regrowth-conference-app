@@ -64,7 +64,7 @@ const FILL: ViewStyle = { flex: 1 };
 function saveLine(status: SaveStatus, exists: boolean): string {
   switch (status) {
     case 'locked':
-      return 'Not saved — notes unlock with registration';
+      return 'Not saved — register to keep notes';
     case 'saving':
       return 'Saving…';
     case 'saved':
@@ -93,7 +93,7 @@ function TagTitle({ tag }: { tag: NoteTag }) {
         disabled={!canPick}
         accessibilityRole={canPick ? 'button' : 'header'}
         accessibilityLabel={canPick ? `${tag.title} — change event` : tag.title}
-        accessibilityState={canPick ? { expanded: open } : undefined}
+        aria-expanded={canPick ? open : undefined}
         className="flex-row items-center gap-x-2"
       >
         <Text className="shrink font-data text-[30px] leading-[36px] text-snow">{tag.title}</Text>
@@ -228,7 +228,8 @@ export function NoteComposer({
     if (micNeedsApp) return openApp();
     setNotice(null);
     voice.clearError();
-    await voice.start();
+    // Once the recorder has taken its space, show where the words will land.
+    if (await voice.start()) setTimeout(showNoteEnd, 80);
   }
 
   function onMoon() {
@@ -307,15 +308,17 @@ export function NoteComposer({
   // scrolled back up to read.
   const scrollRef = useRef<ScrollView>(null);
   const view = useRef({ offset: 0, height: 0, editorBottom: 0 });
+  function showNoteEnd() {
+    const v = view.current;
+    if (v.height) scrollRef.current?.scrollTo({ y: Math.max(0, v.editorBottom - v.height + 24), animated: true });
+  }
   function onEditorLayout(e: LayoutChangeEvent) {
     const { y, height } = e.nativeEvent.layout;
     const v = view.current;
     const before = v.editorBottom;
     v.editorBottom = y + height;
-    if (voice.status !== 'recording' || v.editorBottom <= before || !v.height) return;
-    if (v.offset + v.height >= before - 60) {
-      scrollRef.current?.scrollTo({ y: Math.max(0, v.editorBottom - v.height + 24), animated: true });
-    }
+    if (voice.status !== 'recording' || v.editorBottom <= before) return;
+    if (v.offset + v.height >= before - 60) showNoteEnd();
   }
 
   const panelNotes: string[] = [];
@@ -323,11 +326,7 @@ export function NoteComposer({
   if (!settled) panelNotes.push('Waiting for the microphone…');
   if (voice.notice) panelNotes.push(voice.notice);
   if (settled && voice.source === 'simulated') {
-    panelNotes.push(
-      voice.transcriptSource === 'speech'
-        ? 'Demo: there is no microphone here, so the levels are simulated.'
-        : 'Demo: there is no microphone here, so the levels and the transcript are simulated.',
-    );
+    panelNotes.push('Demo: there is no microphone here, so the levels and the transcript are simulated.');
   } else if (settled && voice.transcriptSource === 'scripted') {
     panelNotes.push('Demo: this browser has no live captions, so a sample session types itself out.');
   }
@@ -395,6 +394,7 @@ export function NoteComposer({
               listening={voice.listening}
               newParagraph={voice.startsParagraph}
               placeholder={PLACEHOLDER}
+              compact={!!children}
             />
           </View>
           {(captures.length > 0 || photoPrompt || videoPrompt) && (

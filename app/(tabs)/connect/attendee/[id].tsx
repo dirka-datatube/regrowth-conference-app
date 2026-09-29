@@ -1,117 +1,164 @@
-import { View, Image, Pressable, Alert } from 'react-native';
+import { View, Text, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Button } from '@/components/Button';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
 
-export default function AttendeeDetail() {
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { Avatar } from '@/components/Avatar';
+import { MenuRow } from '@/components/MenuRow';
+import { CtaButton } from '@/components/connect/CtaButton';
+import { Pills } from '@/components/connect/Pills';
+import { NoticeCard, Loading } from '@/components/connect/NoticeCard';
+import { useAppStore } from '@/lib/store';
+import {
+  roleLine,
+  useCommunityConnect,
+  useCommunityConnections,
+  useCommunityContact,
+  useCommunityProfile,
+} from '@/lib/hooks/useCommunity';
+import { productFor } from '@/lib/events';
+import { colors } from '@/lib/theme';
+
+/**
+ * Attendee profile, opened from a community. The comps have no frame for it,
+ * so it is built in the v2 language (profile card 145:1505, menu rows
+ * 145:1518); re-check when Figma reads are available.
+ *
+ * Connect adds a mutual connection straight away, as the pre-v2 profile did;
+ * scanning their badge (/scan → /c/<token>) is the in-person route to the same
+ * place. Contact details appear only once connected.
+ */
+export default function AttendeeProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const meId = useAppStore((s) => s.attendee?.id);
-  const eventId = useAppStore((s) => s.attendee?.event_id);
-  const qc = useQueryClient();
+  const { profile: person, isLoading, isError, refetch } = useCommunityProfile(id);
+  const connectedIds = useCommunityConnections();
+  const connected = !!id && connectedIds.includes(id);
+  const contact = useCommunityContact(id, connected);
+  const connect = useCommunityConnect();
 
-  const { data: a } = useQuery({
-    queryKey: ['attendee-public', id],
-    enabled: !!id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('attendees')
-        .select('id, name, role, company, photo_url, bio, interests')
-        .eq('id', id!)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: connection } = useQuery({
-    queryKey: ['connection', meId, id],
-    enabled: !!meId && !!id,
-    queryFn: async () => {
-      const [a, b] = [meId!, id!].sort();
-      const { data } = await supabase
-        .from('connections')
-        .select('id')
-        .eq('attendee_a', a)
-        .eq('attendee_b', b)
-        .maybeSingle();
-      return data;
-    },
-  });
-
-  const connect = useMutation({
-    mutationFn: async () => {
-      if (!meId || !id || !eventId) return;
-      const [a, b] = [meId, id].sort();
-      const { error } = await supabase.from('connections').insert({
-        event_id: eventId,
-        attendee_a: a,
-        attendee_b: b,
-        source: 'manual',
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['connection', meId, id] });
-      Alert.alert('Connected', `You and ${a?.name?.split(' ')[0]} are now in each other's contacts.`);
-    },
-    onError: (e: any) => Alert.alert('Hmm', e?.message ?? 'Try again.'),
-  });
-
-  if (!a) return null;
+  const product = person ? productFor(person.event_id) : undefined;
+  const isMe = !!person && person.id === meId;
+  const firstName = person?.name.split(' ')[0] ?? '';
+  const line = person ? roleLine(person) : '';
 
   return (
-    <Screen>
-      <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-      </Pressable>
-
-      <View className="items-center mt-4">
-        {a.photo_url ? (
-          <Image source={{ uri: a.photo_url }} className="w-32 h-32 rounded-full bg-snow/10" />
-        ) : (
-          <View className="w-32 h-32 rounded-full bg-snow/10 items-center justify-center">
-            <Ionicons name="person" size={48} color="#DCD9D0" />
-          </View>
-        )}
-        <T variant="h1" className="mt-4 text-center">{a.name}</T>
-        {(a.role || a.company) && (
-          <T variant="body" className="mt-1 text-cloud/80 text-center">
-            {[a.role, a.company].filter(Boolean).join(' · ')}
-          </T>
-        )}
-      </View>
-
-      {a.interests?.length > 0 && (
-        <View className="mt-6 flex-row flex-wrap justify-center gap-2">
-          {a.interests.map((tag) => (
-            <View key={tag} className="bg-snow/5 border border-snow/10 rounded-pill px-3 py-1">
-              <T variant="caption" className="normal-case tracking-normal text-cloud">{tag}</T>
+    <SubScreen
+      title="Attendee Profile"
+      subtitle={product ? `${product.short} Community` : 'Connect with fellow attendees'}
+    >
+      {isLoading ? (
+        <Section>
+          <Loading label="Loading profile…" />
+        </Section>
+      ) : isError ? (
+        <Section>
+          <NoticeCard
+            icon="cloud-offline-outline"
+            title="Couldn’t load this profile"
+            body="Check your connection and try again."
+            action={{ label: 'Try again', onPress: refetch }}
+          />
+        </Section>
+      ) : !person ? (
+        <Section>
+          <NoticeCard
+            icon="person-outline"
+            title="This profile isn’t available"
+            body="They may keep their profile private, or be registered for a different event."
+            action={{ label: 'Back to Connect', onPress: () => router.navigate('/connect') }}
+          />
+        </Section>
+      ) : (
+        <>
+          <Section>
+            <View className="items-center gap-y-3 rounded-card border border-card-line bg-well px-5 pb-6 pt-7">
+              <Avatar name={person.name} uri={person.photo_url} size={96} />
+              <View className="items-center gap-y-1">
+                <Text accessibilityRole="header" className="text-center font-data text-[22px] font-bold text-snow">
+                  {person.name}
+                </Text>
+                {!!line && <Text className="text-center font-data text-[14px] text-lede">{line}</Text>}
+              </View>
+              <Pills items={person.interests ?? []} center />
             </View>
-          ))}
-        </View>
-      )}
+          </Section>
 
-      {a.bio && (
-        <View className="mt-6">
-          <T variant="sub">About</T>
-          <T variant="body" className="mt-2 text-cloud/90">{a.bio}</T>
-        </View>
-      )}
+          <Section className="gap-y-2">
+            {isMe ? (
+              <CtaButton wide icon="create-outline" label="Edit your profile" onPress={() => router.push('/me/edit')} />
+            ) : connected ? (
+              <View className="h-12 flex-row items-center justify-center gap-x-2 rounded-cta border border-card-line">
+                <Ionicons name="checkmark-circle" size={18} color={colors.snow} />
+                <Text className="font-data text-[13px] font-semibold text-snow">You’re connected</Text>
+              </View>
+            ) : (
+              <CtaButton
+                wide
+                icon="person-add-outline"
+                label={`Connect with ${firstName}`}
+                busy={connect.isPending}
+                onPress={() => connect.mutate(person)}
+              />
+            )}
+            {connect.isError && (
+              <Text className="text-center font-data text-[12px] text-quiet">
+                That didn’t work. Try again, or scan their badge when you meet.
+              </Text>
+            )}
+          </Section>
 
-      <View className="mt-8">
-        <Button
-          label={connection ? 'Connected' : 'Connect'}
-          variant={connection ? 'ghost' : 'primary'}
-          disabled={!!connection}
-          loading={connect.isPending}
-          onPress={() => connect.mutate()}
-        />
-      </View>
-    </Screen>
+          {!!person.bio && (
+            <Section className="gap-y-3">
+              <SectionHeading title="About" />
+              <Text className="font-body text-[14px] leading-[21px] text-lede">{person.bio}</Text>
+            </Section>
+          )}
+
+          {!isMe && (
+            <Section className="gap-y-3">
+              <SectionHeading title="Contact" subtitle={connected ? 'Shared because you’re connected' : undefined} />
+              {connected ? (
+                <>
+                  {!!contact?.email && (
+                    <MenuRow
+                      icon="mail-outline"
+                      title="Email"
+                      subtitle={contact.email}
+                      onPress={() => Linking.openURL(`mailto:${contact.email}`)}
+                    />
+                  )}
+                  {!!contact?.linkedin_url && (
+                    <MenuRow
+                      icon="logo-linkedin"
+                      title="LinkedIn"
+                      subtitle="View their profile"
+                      onPress={() => Linking.openURL(contact.linkedin_url!)}
+                    />
+                  )}
+                </>
+              ) : (
+                <Text className="font-data text-[13px] text-quiet">
+                  Connect to see {firstName}’s contact details.
+                </Text>
+              )}
+            </Section>
+          )}
+
+          {!isMe && !connected && (
+            <Section>
+              <MenuRow
+                icon="scan-outline"
+                title="Meeting in person?"
+                subtitle="Scan their badge to connect"
+                onPress={() => router.push('/scan')}
+              />
+            </Section>
+          )}
+        </>
+      )}
+    </SubScreen>
   );
 }

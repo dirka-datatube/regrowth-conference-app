@@ -1,112 +1,135 @@
-import { View, Image, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Button } from '@/components/Button';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
+
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { MenuRow } from '@/components/MenuRow';
+import { CtaButton } from '@/components/connect/CtaButton';
+import { PartnerLogo } from '@/components/connect/PartnerLogo';
+import { Pills } from '@/components/connect/Pills';
+import { NoticeCard, Loading } from '@/components/connect/NoticeCard';
+import { tagLabel, usePartner, usePartnerInterest } from '@/lib/hooks/usePartners';
+import { colors } from '@/lib/theme';
+
+/**
+ * A partner's page — the comp is CommBank (185:550), with no layer tree here,
+ * so it is built from the frame and the v2 patterns; re-check against 185:550
+ * when Figma reads are available. It replaces the pre-v2 app/commbank.tsx:
+ * every partner gets this page, and the admin panel's partner row fills it.
+ *
+ * The hero is a photo card in the comp; the scrim and the logo lockup stand
+ * in until the imagery is exported (Sprint 12).
+ */
+
+function host(url: string) {
+  try {
+    return new URL(url).host.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 export default function PartnerDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const attendeeId = useAppStore((s) => s.attendee?.id);
-  const qc = useQueryClient();
+  const { partner, isLoading } = usePartner(id);
+  const { registered, register } = usePartnerInterest(partner);
 
-  const { data: partner } = useQuery({
-    queryKey: ['partner', id],
-    enabled: !!id,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('partners').select('*').eq('id', id!).single();
-      if (error) throw error;
-      return data;
-    },
-  });
+  if (isLoading || !partner) {
+    return (
+      <SubScreen title="REGROWTH Partners" subtitle="Explore our trusted partners">
+        <Section>
+          {isLoading ? (
+            <Loading label="Loading partner…" />
+          ) : (
+            <NoticeCard
+              icon="business-outline"
+              title="This partner isn’t available"
+              body="They may no longer be partnering with your event."
+              action={{ label: 'All partners', onPress: () => router.navigate('/connect/partners') }}
+            />
+          )}
+        </Section>
+      </SubScreen>
+    );
+  }
 
-  const { data: alreadyInterested } = useQuery({
-    queryKey: ['partner-interest', id, attendeeId],
-    enabled: !!id && !!attendeeId,
-    queryFn: async () => {
-      const { count } = await supabase
-        .from('partner_interest')
-        .select('*', { count: 'exact', head: true })
-        .eq('partner_id', id!)
-        .eq('attendee_id', attendeeId!);
-      return (count ?? 0) > 0;
-    },
-  });
-
-  const expressInterest = useMutation({
-    mutationFn: async () => {
-      if (!attendeeId || !id) return;
-      const { error } = await supabase.from('partner_interest').insert({
-        partner_id: id,
-        attendee_id: attendeeId,
-      });
-      if (error) throw error;
-
-      // Fire AC event so the partner gets the lead via their automation.
-      await supabase.functions.invoke('ac-event-emit', {
-        body: {
-          attendee_id: attendeeId,
-          event_name: 'partner_interest',
-          event_data: { partner_id: id, partner_name: partner?.name },
-        },
-      });
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['partner-interest', id, attendeeId] });
-      Alert.alert(
-        "We've passed it on",
-        `${partner?.name} will be in touch soon. We've added them to your connections too.`,
-      );
-    },
-    onError: (e: any) => Alert.alert('Hmm', e?.message ?? 'Try again in a moment.'),
-  });
-
-  if (!partner) return null;
+  const kind = partner.tags?.[0] ? `${tagLabel(partner.tags[0])} partner` : 'REGROWTH partner';
 
   return (
-    <Screen>
-      <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-      </Pressable>
-
-      {partner.logo_url && (
-        <View className="bg-cloud rounded-card mt-4 p-6 items-center">
-          <Image source={{ uri: partner.logo_url }} className="w-40 h-24" resizeMode="contain" />
+    <SubScreen title={partner.name} subtitle={`${kind} of REGROWTH`}>
+      <Section>
+        <View className="h-[184px] items-center justify-center gap-y-3 overflow-hidden rounded-feature border border-hairline bg-scrim-strong">
+          <View className="absolute inset-0 bg-ocean/30" />
+          <PartnerLogo name={partner.name} uri={partner.logo_url} size={88} />
+          <Text className="font-data text-[16px] font-semibold text-snow">
+            {partner.name} × REGROWTH®
+          </Text>
         </View>
-      )}
+      </Section>
 
-      <View className="mt-6">
-        <T variant="h1">{partner.name}</T>
-        {partner.description && (
-          <T variant="body" className="mt-3 text-cloud/90">{partner.description}</T>
+      <Section className="gap-y-3">
+        <SectionHeading title="About" />
+        {!!partner.description && (
+          <Text className="font-body text-[14px] leading-[21px] text-lede">{partner.description}</Text>
         )}
-      </View>
+        <Pills items={partner.tags ?? []} />
+      </Section>
 
-      {partner.solutions_content && (
-        <View className="mt-6">
-          <T variant="sub">Solutions for your business</T>
-          <T variant="body" className="mt-2 text-cloud/90">{partner.solutions_content}</T>
-        </View>
+      {!!partner.solutions_content && (
+        <Section className="gap-y-3">
+          <SectionHeading title="Solutions for your business" />
+          <Text className="font-body text-[14px] leading-[21px] text-lede">{partner.solutions_content}</Text>
+        </Section>
       )}
 
-      <View className="mt-8 gap-y-3">
-        <Button
-          label={alreadyInterested ? "We've shared your details" : "I'm interested"}
-          disabled={alreadyInterested}
-          loading={expressInterest.isPending}
-          onPress={() => expressInterest.mutate()}
-        />
-        {partner.website_url && (
-          <Button
-            label="Visit website"
-            variant="ghost"
-            onPress={() => Linking.openURL(partner.website_url!)}
+      <Section className="gap-y-2">
+        {registered ? (
+          <View className="h-12 flex-row items-center justify-center gap-x-2 rounded-cta border border-card-line">
+            <Ionicons name="checkmark-circle" size={18} color={colors.snow} />
+            <Text className="font-data text-[13px] font-semibold text-snow">Interest registered</Text>
+          </View>
+        ) : (
+          <CtaButton
+            wide
+            icon="hand-right-outline"
+            label="Register interest"
+            busy={register.isPending}
+            onPress={() => register.mutate()}
           />
         )}
-      </View>
-    </Screen>
+        <Text className="text-center font-data text-[12px] leading-[17px] text-quiet">
+          {registered
+            ? `We’ve passed your details to ${partner.name}. They’ll be in touch.`
+            : `We’ll share your name and email with ${partner.name} so they can follow up.`}
+        </Text>
+        {register.isError && (
+          <Text className="text-center font-data text-[12px] text-snow">That didn’t go through. Try again in a moment.</Text>
+        )}
+      </Section>
+
+      {(!!partner.website_url || !!partner.contact_email) && (
+        <Section className="gap-y-3">
+          <SectionHeading title="Get in touch" />
+          {!!partner.website_url && (
+            <MenuRow
+              icon="globe-outline"
+              title="Website"
+              subtitle={host(partner.website_url)}
+              onPress={() => Linking.openURL(partner.website_url!)}
+            />
+          )}
+          {!!partner.contact_email && (
+            <MenuRow
+              icon="mail-outline"
+              title="Email"
+              subtitle={partner.contact_email}
+              onPress={() => Linking.openURL(`mailto:${partner.contact_email}`)}
+            />
+          )}
+        </Section>
+      )}
+    </SubScreen>
   );
 }

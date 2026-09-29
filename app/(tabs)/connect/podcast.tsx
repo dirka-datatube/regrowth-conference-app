@@ -1,70 +1,83 @@
-import { View, Pressable, Linking } from 'react-native';
-import { router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
-import { IS_DEMO, demoPodcast } from '@/lib/demo';
+import { View, RefreshControl } from 'react-native';
 
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { NeedHelp } from '@/components/NeedHelp';
+import { EpisodePlayer } from '@/components/connect/EpisodePlayer';
+import { EpisodeRow } from '@/components/connect/EpisodeRow';
+import { NoticeCard, Loading } from '@/components/connect/NoticeCard';
+import { usePodcastEpisodes, usePodcastPlayer } from '@/lib/hooks/usePodcast';
+import { colors } from '@/lib/theme';
+
+/**
+ * Impact & Influence Podcast (206:755). The frame is 1376px tall and has no
+ * layer tree here, so it is built from the frame name, the Connect card's copy
+ * and the v2 patterns; re-check against 206:755 when Figma reads are
+ * available.
+ *
+ * The latest episode leads with the full player; earlier episodes play in
+ * place. Episodes stream in the app (expo-av, an <audio> element on the web)
+ * rather than handing off to a podcast app.
+ */
 export default function Podcast() {
-  const eventId = useAppStore((s) => s.attendee?.event_id);
-  const { data } = useQuery({
-    queryKey: ['podcast', eventId],
-    enabled: !!eventId,
-    queryFn: async () => {
-      if (IS_DEMO) return demoPodcast;
-      const { data, error } = await supabase
-        .from('podcast_episodes')
-        .select('*')
-        .eq('event_id', eventId!)
-        .order('published_at', { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+  const { episodes, isLoading, isError, isRefetching, refetch } = usePodcastEpisodes();
+  const player = usePodcastPlayer();
+  const [latest, ...earlier] = episodes;
 
   return (
-    <Screen>
-      <View className="flex-row items-center pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-        </Pressable>
-        <T variant="caption" className="ml-2">Podcast</T>
-      </View>
-      <T variant="h1" className="mt-2">Impact & Influence</T>
-      <T variant="body" className="mt-2 text-cloud/80">
-        Conversations with the people moving real estate forward.
-      </T>
+    <SubScreen
+      title="Impact & Influence Podcast"
+      subtitle="Listen to inspiring conversations, leadership insights and real-world success stories."
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.earth} />}
+    >
+      {isLoading ? (
+        <Section>
+          <Loading label="Loading episodes…" />
+        </Section>
+      ) : isError ? (
+        <Section>
+          <NoticeCard
+            icon="cloud-offline-outline"
+            title="Couldn’t load the podcast"
+            body="Check your connection and try again."
+            action={{ label: 'Try again', onPress: refetch }}
+          />
+        </Section>
+      ) : !latest ? (
+        <Section>
+          <NoticeCard
+            icon="mic-outline"
+            title="Episodes are on their way"
+            body="Impact & Influence episodes appear here as they’re released to attendees."
+          />
+        </Section>
+      ) : (
+        <>
+          <Section className="gap-y-3">
+            <SectionHeading title="Latest Episode" />
+            <EpisodePlayer episode={latest} player={player} />
+          </Section>
 
-      <View className="mt-6 gap-y-3">
-        {data?.map((ep) => (
-          <Card key={ep.id} onPress={() => ep.episode_url && Linking.openURL(ep.episode_url)}>
-            <T variant="caption" className="normal-case tracking-normal text-earth">
-              {new Date(ep.published_at).toLocaleDateString()}
-            </T>
-            <T variant="h3" className="mt-1">{ep.title}</T>
-            {ep.description && (
-              <T variant="body" className="mt-2 text-cloud/80" numberOfLines={3}>{ep.description}</T>
-            )}
-            <View className="flex-row mt-3 gap-3">
-              {ep.audio_url && (
-                <Pressable
-                  onPress={() => Linking.openURL(ep.audio_url)}
-                  className="bg-earth rounded-pill px-4 py-2 flex-row items-center"
-                >
-                  <Ionicons name="play" size={14} color="#FFFFFF" />
-                  <T variant="small" className="ml-2 text-snow font-sub uppercase tracking-widest">
-                    Listen
-                  </T>
-                </Pressable>
-              )}
-            </View>
-          </Card>
-        ))}
-      </View>
-    </Screen>
+          {earlier.length > 0 && (
+            <Section className="gap-y-3">
+              <SectionHeading
+                title="More Episodes"
+                subtitle={`${earlier.length} ${earlier.length === 1 ? 'episode' : 'episodes'}`}
+              />
+              <View className="gap-y-3">
+                {earlier.map((ep) => (
+                  <EpisodeRow key={ep.id} episode={ep} player={player} />
+                ))}
+              </View>
+            </Section>
+          )}
+        </>
+      )}
+
+      <Section>
+        <NeedHelp />
+      </Section>
+    </SubScreen>
   );
 }

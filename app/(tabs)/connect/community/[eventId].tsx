@@ -1,91 +1,116 @@
-import { useState } from 'react';
-import { View, Image, Pressable, TextInput } from 'react-native';
-import { router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
-import { IS_DEMO, demoOtherAttendees } from '@/lib/demo';
+import { useMemo, useState } from 'react';
+import { View, RefreshControl } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 
-export default function Attendees() {
-  const eventId = useAppStore((s) => s.attendee?.event_id);
-  const meId = useAppStore((s) => s.attendee?.id);
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SearchField } from '@/components/SearchField';
+import { SectionHeading } from '@/components/SectionHeading';
+import { NeedHelp } from '@/components/NeedHelp';
+import { AttendeeCard } from '@/components/connect/AttendeeCard';
+import { HeaderIconButton } from '@/components/connect/HeaderIconButton';
+import { NoticeCard, Loading } from '@/components/connect/NoticeCard';
+import { useRegistrations } from '@/lib/hooks/useRegistrations';
+import { matchesMember, useCommunityConnections, useCommunityMembers } from '@/lib/hooks/useCommunity';
+import { productFor } from '@/lib/events';
+import { colors } from '@/lib/theme';
+
+/**
+ * An event's community — Connect → Attendees, Navigate (189:540) and Study
+ * Tour (211:660). Built from the frame names, their 957px height and the v2
+ * patterns; re-check against those nodes when Figma reads are available.
+ *
+ * Communities open with registration: without a confirmed registration for
+ * this event the list is replaced by a locked card that points to Events.
+ * The scan button in the header is the in-person way to connect (a badge scan).
+ */
+export default function Community() {
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
+  const product = productFor(eventId ?? '');
+  const eventName = product?.short ?? 'Event';
+  const { isRegisteredFor } = useRegistrations();
+  const open = !!eventId && isRegisteredFor(eventId);
+
   const [q, setQ] = useState('');
+  const { members, isLoading, isError, isRefetching, refetch } = useCommunityMembers(eventId, open);
+  const connectedIds = useCommunityConnections();
+  const shown = useMemo(() => members.filter((m) => matchesMember(m, q)), [members, q]);
 
-  const { data } = useQuery({
-    queryKey: ['attendees', eventId, q],
-    enabled: !!eventId,
-    queryFn: async () => {
-      if (IS_DEMO) {
-        const ql = q.toLowerCase();
-        return demoOtherAttendees.filter(
-          (a) =>
-            !ql ||
-            a.name.toLowerCase().includes(ql) ||
-            (a.role ?? '').toLowerCase().includes(ql) ||
-            (a.company ?? '').toLowerCase().includes(ql),
-        );
-      }
-      let query = supabase
-        .from('attendees')
-        .select('id, name, role, company, photo_url, interests')
-        .eq('event_id', eventId!)
-        .neq('visibility', 'hidden')
-        .neq('id', meId!)
-        .order('name')
-        .limit(200);
-      if (q.length) {
-        query = query.or(`name.ilike.%${q}%,company.ilike.%${q}%,role.ilike.%${q}%`);
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+  const count = shown.length;
+  const heading = q.trim()
+    ? `${count} ${count === 1 ? 'match' : 'matches'}`
+    : `${count} ${count === 1 ? 'person' : 'people'} going to ${eventName}`;
 
   return (
-    <Screen>
-      <View className="flex-row items-center pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-        </Pressable>
-        <T variant="caption" className="ml-2">Attendees</T>
-      </View>
-      <T variant="h1" className="mt-2">Who's here</T>
+    <SubScreen
+      title={`${eventName} Community`}
+      subtitle="Connect with fellow attendees"
+      right={open ? <HeaderIconButton icon="scan-outline" label="Scan a badge" onPress={() => router.push('/scan')} /> : undefined}
+      refreshControl={
+        open ? <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.earth} /> : undefined
+      }
+    >
+      {!open ? (
+        <Section>
+          <NoticeCard
+            icon="lock-closed-outline"
+            title="Communities open with registration"
+            body={`Register for ${eventName} to meet the people going, swap details and connect before you arrive.`}
+            action={{ label: 'View Events', onPress: () => router.navigate('/events') }}
+          />
+        </Section>
+      ) : (
+        <>
+          <Section>
+            <SearchField
+              value={q}
+              onChangeText={setQ}
+              placeholder="Search by name, role or company"
+              voiceAvailable={false}
+            />
+          </Section>
 
-      <View className="mt-4 bg-snow/5 border border-snow/15 rounded-pill px-4 py-3 flex-row items-center">
-        <Ionicons name="search" size={18} color="#8A8DA6" />
-        <TextInput
-          value={q}
-          onChangeText={setQ}
-          placeholder="Search by name, role, or company"
-          placeholderTextColor="#8A8DA6"
-          className="ml-3 flex-1 text-snow font-body text-body"
-        />
-      </View>
-
-      <View className="mt-4 gap-y-2">
-        {data?.map((a) => (
-          <Card key={a.id} onPress={() => router.push(`/attendees/${a.id}`)}>
-            <View className="flex-row items-center">
-              {a.photo_url ? (
-                <Image source={{ uri: a.photo_url }} className="w-12 h-12 rounded-full bg-snow/10" />
-              ) : (
-                <View className="w-12 h-12 rounded-full bg-snow/10 items-center justify-center">
-                  <Ionicons name="person" size={22} color="#DCD9D0" />
+          <Section className="gap-y-3">
+            {isLoading ? (
+              <Loading label="Loading attendees…" />
+            ) : isError ? (
+              <NoticeCard
+                icon="cloud-offline-outline"
+                title="Couldn’t load the community"
+                body="Check your connection and try again."
+                action={{ label: 'Try again', onPress: () => refetch() }}
+              />
+            ) : members.length === 0 ? (
+              <NoticeCard
+                icon="people-outline"
+                title="You’re one of the first here"
+                body={`As more people register for ${eventName}, they’ll appear here.`}
+              />
+            ) : (
+              <>
+                <SectionHeading title="Attendees" subtitle={heading} />
+                <View className="gap-y-3">
+                  {shown.map((m) => (
+                    <AttendeeCard
+                      key={m.id}
+                      member={m}
+                      connected={connectedIds.includes(m.id)}
+                      onPress={() => router.push(`/connect/attendee/${m.id}` as never)}
+                    />
+                  ))}
                 </View>
-              )}
-              <View className="ml-3 flex-1">
-                <T variant="h3">{a.name}</T>
-                <T variant="small">{[a.role, a.company].filter(Boolean).join(' · ')}</T>
-              </View>
-            </View>
-          </Card>
-        ))}
-      </View>
-    </Screen>
+                {count === 0 && (
+                  <NoticeCard icon="search-outline" title="No one matches that" body="Try a name, a company, or an interest like “sales”." />
+                )}
+              </>
+            )}
+          </Section>
+        </>
+      )}
+
+      <Section>
+        <NeedHelp />
+      </Section>
+    </SubScreen>
   );
 }

@@ -49,8 +49,12 @@ const server = createServer(async (req, res) => {
 await new Promise((resolve) => server.listen(0, resolve));
 const base = `http://localhost:${server.address().port}`;
 
-// What each page must show in each state.
-const PAGES = [
+const NAV = '00000000-0000-0000-0000-000000000001';
+const TOUR = '00000000-0000-0000-0000-000000000002';
+
+// What each page must show in each state. `tabBar: false` marks full-screen
+// routes outside the tabs.
+const ALL_PAGES = [
   { path: '/', name: 'home', registered: ['ACCESS EVENT', 'You’re Registered!'], unregistered: ['GET STARTED'], both: ['Quick Access', 'Featured', 'Need Help?', 'Continue Learning'] },
   { path: '/alerts', name: 'alerts', both: ['Registration Confirmed', 'Networking Opportunity'] },
   { path: '/events', name: 'events', registered: ['View My QR Code'], unregistered: ['registrations are now open'], both: ['Welcome to REGROWTH events!'] },
@@ -60,7 +64,22 @@ const PAGES = [
   { path: '/me/tickets', name: 'tickets', registered: ['Study Tour 2027 Badge'], unregistered: ['No active tickets'], both: ['Fastpass Entry Gateway'] },
   // A phone camera opening a badge URL (lib/qr.ts).
   { path: '/c/demoqr87654321', name: 'scanned-badge', tabBar: false, both: ['James Patel', 'Connect'] },
+
+  // Connect
+  { path: `/connect/community/${NAV}`, name: 'community', registered: ['James Patel'], unregistered: ['Communities open with registration'], both: ['Navigate 2027 Community'] },
+  { path: `/connect/community/${TOUR}`, name: 'community-tour', both: ['Study Tour 2027 Community'] },
+  { path: '/connect/attendee/a3', name: 'attendee', registered: ['You’re connected'] },
+  { path: '/connect/partners', name: 'partners', both: ['REGROWTH Partners', 'CommBank'] },
+  { path: '/connect/partners/p1', name: 'partner', both: ['Register interest'] },
+  { path: '/connect/podcast', name: 'podcast', both: ['Latest Episode'] },
+  { path: '/connect/referral', name: 'referral', both: ['Find A Referral', 'Referrals are on their way'] },
+  { path: '/scan', name: 'scan', tabBar: false, both: ['Upload From Gallery', 'No camera available'] },
+  { path: '/support', name: 'support', tabBar: false, both: ['REGROWTH Assistant', 'Open Venue Map'] },
 ];
+
+// SMOKE_ONLY=home,alerts runs a subset.
+const only = process.env.SMOKE_ONLY?.split(',').map((x) => x.trim());
+const PAGES = only ? ALL_PAGES.filter((p) => only.includes(p.name)) : ALL_PAGES;
 
 const failures = [];
 const fail = (msg) => failures.push(msg);

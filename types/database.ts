@@ -28,6 +28,7 @@ export type Database = {
       daily_suggestions: { Row: DailySuggestion; Insert: Partial<DailySuggestion>; Update: Partial<DailySuggestion> };
       admin_users: { Row: AdminUser; Insert: Partial<AdminUser>; Update: Partial<AdminUser> };
       audit_log: { Row: AuditLog; Insert: Partial<AuditLog>; Update: Partial<AuditLog> };
+      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
     };
   };
 };
@@ -299,6 +300,24 @@ export type DailySuggestion = {
   suggested_partner_ids: string[];
   rationale: Record<string, string>;
   created_at: string;
+};
+
+/**
+ * Migration 20260929000100. The person behind an account, registered or not;
+ * `id` is the auth.users id. The account owns `id` and `email` — people may
+ * update the other columns of their own row.
+ */
+export type Profile = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  photo_url: string | null;
+  company: string | null;
+  role: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type AdminUser = {

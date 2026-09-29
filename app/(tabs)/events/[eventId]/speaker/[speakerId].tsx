@@ -1,142 +1,148 @@
-import { View, Image, Pressable, Linking } from 'react-native';
+import { useMemo } from 'react';
+import { View, Text, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
 
-export default function SpeakerDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const attendeeId = useAppStore((s) => s.attendee?.id);
-  const qc = useQueryClient();
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { MenuRow } from '@/components/MenuRow';
+import { Avatar } from '@/components/Avatar';
+import { EventBell } from '@/components/event/EventBell';
+import { SessionCard } from '@/components/event/SessionCard';
+import { ActionButton } from '@/components/event/ActionButton';
+import { RegisterPrompt } from '@/components/event/RegisterPrompt';
+import { GuideEmpty, GuideLoading } from '@/components/event/GuideState';
+import { useRegistrations } from '@/lib/hooks/useRegistrations';
+import { useEvent, useEventClock } from '@/lib/hooks/useEvent';
+import { useSchedulePicks, useSessions } from '@/lib/hooks/useSessions';
+import { useSpeaker, useSpeakerFollows } from '@/lib/hooks/useSpeakers';
+import { eventHref } from '@/lib/events';
+import { firstName, isLive, sessionHref, speakerLine } from '@/lib/eventContent';
 
-  const { data: speaker } = useQuery({
-    queryKey: ['speaker', id],
-    enabled: !!id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('speakers')
-        .select(
-          `*, sessions:session_speakers(session:sessions(id, title, abstract, start_at, end_at, room))`,
-        )
-        .eq('id', id!)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
+/**
+ * Speaker profile — "Speakers ABOUT" (239:1501), whose Speaker component
+ * (239:1600) is a 262px card: photo, name, role. Built from those and v2
+ * patterns; re-check against 239:1501 when Figma reads are available.
+ *
+ * Then the bio, their sessions at this event (saveable, as on the agenda),
+ * and a question for them. Follow writes `speaker_followers`.
+ */
+export default function SpeakerProfile() {
+  const { eventId = '', speakerId = '' } = useLocalSearchParams<{ eventId: string; speakerId: string }>();
+  const { event } = useEvent(eventId);
+  const { speaker, isLoading } = useSpeaker(eventId, speakerId);
+  const { data: sessions } = useSessions(eventId);
+  const follows = useSpeakerFollows();
+  const picks = useSchedulePicks();
+  const { isRegisteredFor } = useRegistrations();
+  const now = useEventClock();
+  const registered = isRegisteredFor(eventId);
 
-  const { data: isFollowing } = useQuery({
-    queryKey: ['follows-speaker', id, attendeeId],
-    enabled: !!id && !!attendeeId,
-    queryFn: async () => {
-      const { count } = await supabase
-        .from('speaker_followers')
-        .select('*', { count: 'exact', head: true })
-        .eq('speaker_id', id!)
-        .eq('attendee_id', attendeeId!);
-      return (count ?? 0) > 0;
-    },
-  });
+  const theirs = useMemo(
+    () => (sessions ?? []).filter((s) => s.speakers.some((sp) => sp.id === speakerId)),
+    [sessions, speakerId],
+  );
 
-  const toggleFollow = useMutation({
-    mutationFn: async () => {
-      if (!attendeeId || !id) return;
-      if (isFollowing) {
-        await supabase
-          .from('speaker_followers')
-          .delete()
-          .eq('speaker_id', id)
-          .eq('attendee_id', attendeeId);
-      } else {
-        await supabase.from('speaker_followers').insert({ speaker_id: id, attendee_id: attendeeId });
-      }
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['follows-speaker', id, attendeeId] }),
-  });
+  if (!speaker) {
+    return (
+      <SubScreen title="Speakers" subtitle="Keynote & Industry’s Best" right={<EventBell />}>
+        <Section>
+          {isLoading ? (
+            <GuideLoading label="Loading the speaker…" />
+          ) : (
+            <GuideEmpty icon="mic-outline" title="Speaker not found" body={`They are not on the ${event.short} line-up.`}>
+              <ActionButton
+                label="See all speakers"
+                onPress={() => router.replace(eventHref(eventId, 'speakers') as never)}
+              />
+            </GuideEmpty>
+          )}
+        </Section>
+      </SubScreen>
+    );
+  }
 
-  if (!speaker) return null;
+  const first = firstName(speaker.name) || speaker.name;
+  const following = follows.isFollowing(speaker.id);
+  const line = speakerLine(speaker);
+  const linkedin = speaker.linkedin_url;
+  const canSave = registered && picks.canSave;
 
   return (
-    <Screen>
-      <Pressable onPress={() => router.back()} hitSlop={10} className="pt-2">
-        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-      </Pressable>
-
-      <View className="items-center mt-4">
-        <View className="bg-cloud rounded-full p-1">
-          {speaker.headshot_url ? (
-            <Image source={{ uri: speaker.headshot_url }} className="w-40 h-40 rounded-full" />
-          ) : (
-            <View className="w-40 h-40 rounded-full bg-cloud items-center justify-center">
-              <Ionicons name="person" size={64} color="#04072F" />
+    <SubScreen title="Speakers" subtitle="Keynote & Industry’s Best" right={<EventBell />}>
+      <Section>
+        <View className="items-center gap-y-4 rounded-card border border-card-line bg-well px-5 pb-5 pt-6">
+          <Avatar name={speaker.name} uri={speaker.headshot_url} size={120} />
+          <View className="items-center gap-y-1">
+            <Text accessibilityRole="header" className="text-center font-data text-[22px] font-bold text-snow">
+              {speaker.name}
+            </Text>
+            {!!line && <Text className="text-center font-data text-[13px] text-snow/80">{line}</Text>}
+          </View>
+          {((registered && follows.canFollow) || !!linkedin) && (
+            <View className="flex-row flex-wrap justify-center gap-3">
+              {registered && follows.canFollow && (
+                <ActionButton
+                  label={following ? 'Following' : 'Follow'}
+                  icon={following ? 'checkmark' : 'person-add-outline'}
+                  tone={following ? 'outline' : 'ocean'}
+                  selected={following}
+                  accessibilityLabel={following ? `Following ${speaker.name}. Unfollow` : `Follow ${speaker.name}`}
+                  onPress={() => follows.toggle(speaker.id)}
+                  className="min-w-[128px]"
+                />
+              )}
+              {!!linkedin && (
+                <ActionButton
+                  label="LinkedIn"
+                  icon="logo-linkedin"
+                  tone="outline"
+                  accessibilityLabel={`${speaker.name} on LinkedIn`}
+                  onPress={() => Linking.openURL(linkedin).catch(() => {})}
+                  className="min-w-[128px]"
+                />
+              )}
             </View>
           )}
         </View>
-        <T variant="h1" className="mt-4 text-center">{speaker.name}</T>
-        {(speaker.title || speaker.company) && (
-          <T variant="body" className="mt-1 text-cloud/80 text-center">
-            {[speaker.title, speaker.company].filter(Boolean).join(' · ')}
-          </T>
-        )}
-      </View>
+      </Section>
 
-      <View className="flex-row gap-3 mt-6">
-        <View className="flex-1">
-          <Button
-            label={isFollowing ? 'Following' : 'Follow'}
-            variant={isFollowing ? 'ghost' : 'primary'}
-            onPress={() => toggleFollow.mutate()}
-          />
-        </View>
-        {speaker.linkedin_url && (
-          <View className="flex-1">
-            <Button
-              label="LinkedIn"
-              variant="secondary"
-              onPress={() => Linking.openURL(speaker.linkedin_url!)}
+      {!!speaker.bio && (
+        <Section className="gap-y-3">
+          <SectionHeading title={`About ${first}`} />
+          <Text className="font-body text-[14px] leading-[21px] text-lede">{speaker.bio}</Text>
+        </Section>
+      )}
+
+      {theirs.length > 0 && (
+        <Section className="gap-y-3">
+          <SectionHeading title={theirs.length === 1 ? 'Session' : 'Sessions'} subtitle={`${first} at ${event.short}`} />
+          {theirs.map((s) => (
+            <SessionCard
+              key={s.id}
+              session={s}
+              timeZone={event.timeZone}
+              live={isLive(s, now)}
+              saved={picks.isSaved(s.id)}
+              onToggleSave={canSave ? () => picks.toggle(s.id) : undefined}
+              onPress={() => router.push(sessionHref(eventId, s.id) as never)}
             />
-          </View>
+          ))}
+        </Section>
+      )}
+
+      <Section>
+        {registered ? (
+          <MenuRow
+            icon="help-circle-outline"
+            title={`Ask ${first} a question`}
+            subtitle="It goes to the Q&A for their sessions"
+            onPress={() => router.push(`/questions?speaker_id=${encodeURIComponent(speaker.id)}` as never)}
+          />
+        ) : (
+          <RegisterPrompt eventName={event.short} unlocks={`follow ${first} and send them questions`} />
         )}
-      </View>
-
-      {speaker.bio && (
-        <View className="mt-8">
-          <T variant="sub">About</T>
-          <T variant="body" className="mt-2 text-cloud/90">{speaker.bio}</T>
-        </View>
-      )}
-
-      {Array.isArray(speaker.sessions) && speaker.sessions.length > 0 && (
-        <View className="mt-8">
-          <T variant="sub">Sessions</T>
-          <View className="mt-3 gap-y-2">
-            {speaker.sessions.map((row: any) =>
-              row.session ? (
-                <Card key={row.session.id} onPress={() => router.push(`/session/${row.session.id}`)}>
-                  <T variant="caption" className="normal-case tracking-normal text-earth">
-                    {new Date(row.session.start_at).toLocaleString()}
-                    {row.session.room ? ` · ${row.session.room}` : ''}
-                  </T>
-                  <T variant="h3" className="mt-1">{row.session.title}</T>
-                </Card>
-              ) : null,
-            )}
-          </View>
-        </View>
-      )}
-
-      <View className="mt-8">
-        <Button
-          label="Ask a question"
-          variant="ghost"
-          onPress={() => router.push({ pathname: '/questions', params: { speaker_id: id } })}
-        />
-      </View>
-    </Screen>
+      </Section>
+    </SubScreen>
   );
 }

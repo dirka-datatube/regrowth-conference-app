@@ -1,140 +1,141 @@
-import { useState } from 'react';
-import { View, Pressable, Alert, Linking } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Text } from 'react-native';
 import { router } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
+
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { SearchField } from '@/components/SearchField';
+import { NeedHelp } from '@/components/NeedHelp';
 import { QrModal } from '@/components/QrModal';
-import { ScannerModal } from '@/components/ScannerModal';
-import { tokenFromQr } from '@/lib/qr';
+import { ActionTiles } from '@/components/profile/ActionTiles';
+import { ConnectionCard, BusinessCardRow } from '@/components/profile/ConnectionCard';
+import { StatePanel, LoadingLine } from '@/components/profile/StatePanel';
+import { CtaButton } from '@/components/profile/CtaButton';
+import { useConnections, useConnectionsCards, type Connection } from '@/lib/hooks/useConnections';
+import { useAppStore } from '@/lib/store';
+
+/**
+ * Networking Connections — Figma v2 (216:1028) and its empty state (217:1330).
+ * Built from the frame names and v2 patterns; re-check against 216:1028 and
+ * 217:1330 when Figma reads are available.
+ *
+ * Everyone the attendee has connected with, searchable, with email and
+ * LinkedIn one tap away. Scan QR opens the scanner (a badge lands on
+ * /c/<token>, which connects and comes back here), My QR shows the attendee's
+ * own badge to be scanned, and Scan a Card photographs a business card.
+ * Photographed cards not yet matched to an attendee follow the list.
+ */
+
+function matches(c: Connection, query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  if (!c.person) return false;
+  return [c.person.name, c.person.role, c.person.company].some((f) => f?.toLowerCase().includes(needle));
+}
 
 export default function Connections() {
   const me = useAppStore((s) => s.attendee);
-  const qc = useQueryClient();
+  const { data, isLoading, isError, refetch } = useConnections();
+  const { data: cards } = useConnectionsCards();
+  const [query, setQuery] = useState('');
   const [showQr, setShowQr] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
 
-  const { data: connections } = useQuery({
-    queryKey: ['my-connections', me?.id],
-    enabled: !!me?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('connections')
-        .select(
-          `id, source, created_at,
-           a:attendees!connections_attendee_a_fkey(id, name, role, company, photo_url, email),
-           b:attendees!connections_attendee_b_fkey(id, name, role, company, photo_url, email)`,
-        )
-        .or(`attendee_a.eq.${me!.id},attendee_b.eq.${me!.id}`)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data ?? []).map((row: any) => {
-        const other = row.a.id === me!.id ? row.b : row.a;
-        return { id: row.id, source: row.source, created_at: row.created_at, other };
-      });
-    },
-  });
+  const connections = useMemo(() => data ?? [], [data]);
+  const shown = useMemo(() => connections.filter((c) => matches(c, query)), [connections, query]);
+  const count = connections.length;
+  const isEmpty = !isLoading && !isError && count === 0 && !cards?.length;
 
-  const handleScan = useMutation({
-    mutationFn: async (scanned: string) => {
-      if (!me) return;
-      // Badges encode a URL since Sprint 07; older codes are the bare token.
-      const qrToken = tokenFromQr(scanned);
-      if (!qrToken) throw new Error('That QR code is not a REGROWTH badge.');
-      const { data, error } = await supabase.functions.invoke('qr-connect', {
-        body: { scanner_id: me.id, scanned_qr_token: qrToken },
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (res: any) => {
-      setShowScanner(false);
-      qc.invalidateQueries({ queryKey: ['my-connections', me?.id] });
-      Alert.alert(
-        res?.already ? 'Already connected' : 'Connected',
-        'They\'re now in your contacts. Have a great conversation.',
-      );
-    },
-    onError: (e: any) => Alert.alert("That didn't scan", e?.message ?? 'Try again.'),
-  });
+  const scan = () => router.push('/scan');
+  const scanCard = () => router.push('/me/card');
+  const myQr = me ? () => setShowQr(true) : undefined;
 
   return (
-    <Screen>
-      <View className="flex-row items-center pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-        </Pressable>
-        <T variant="caption" className="ml-2">Connection Hub</T>
-      </View>
-      <T variant="h1" className="mt-2">Your people</T>
+    <SubScreen
+      title="Networking Connections"
+      subtitle={data ? `${count} connection${count === 1 ? '' : 's'}` : 'Everyone you have met'}
+    >
+      {isEmpty ? (
+        <Section>
+          {/* ICONS — people + QR discs stand in for the comp's illustration. */}
+          <StatePanel
+            size="large"
+            icon="people-outline"
+            badge="qr-code-outline"
+            title="No connections yet"
+            body="Scan someone’s badge to connect. They’ll appear here with their details, ready to follow up."
+          >
+            <CtaButton label="Scan a Badge" icon="scan-outline" block onPress={scan} />
+            {myQr && <CtaButton label="Show My QR Code" icon="qr-code-outline" tone="outline" block onPress={myQr} />}
+            <CtaButton label="Scan a Business Card" icon="card-outline" tone="quiet" onPress={scanCard} />
+          </StatePanel>
+        </Section>
+      ) : (
+        <>
+          <Section>
+            <ActionTiles
+              items={[
+                { label: 'Scan QR', icon: 'scan-outline', onPress: scan, hint: 'Scan a badge to connect' },
+                ...(myQr ? [{ label: 'My QR', icon: 'qr-code-outline' as const, onPress: myQr, hint: 'Show your badge to be scanned' }] : []),
+                { label: 'Scan a Card', icon: 'card-outline', onPress: scanCard, hint: 'Photograph a business card' },
+              ]}
+            />
+          </Section>
 
-      <View className="flex-row gap-3 mt-6">
-        <View className="flex-1">
-          <Button label="Scan QR" onPress={() => setShowScanner(true)} />
-        </View>
-        <View className="flex-1">
-          <Button label="My QR" variant="secondary" onPress={() => setShowQr(true)} />
-        </View>
-      </View>
+          <Section className="gap-y-3">
+            <SearchField
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search connections"
+              voiceAvailable={false}
+            />
+            {isLoading ? (
+              <LoadingLine label="Loading your connections…" />
+            ) : isError ? (
+              <StatePanel icon="cloud-offline-outline" title="We couldn’t load your connections" body="Check your connection and try again.">
+                <CtaButton label="Try Again" icon="refresh-outline" onPress={refetch} />
+              </StatePanel>
+            ) : shown.length ? (
+              shown.map((c) => (
+                <ConnectionCard
+                  key={c.id}
+                  person={c.person}
+                  onPress={c.person ? () => router.push(`/connect/attendee/${c.person!.id}` as never) : undefined}
+                />
+              ))
+            ) : count ? (
+              <Text className="py-6 text-center font-data text-[13px] text-quiet">
+                No connections match “{query.trim()}”.
+              </Text>
+            ) : null}
+          </Section>
 
-      <View className="mt-4">
-        <Button
-          label="Capture a business card"
-          variant="ghost"
-          onPress={() => router.push('/connections/card')}
-        />
-      </View>
-
-      <View className="mt-8">
-        <T variant="sub">Connections</T>
-        <View className="mt-3 gap-y-2">
-          {connections?.length ? (
-            connections.map((c) => (
-              <Card key={c.id} onPress={() => router.push(`/attendees/${c.other.id}`)}>
-                <View className="flex-row items-center">
-                  <View className="flex-1">
-                    <T variant="h3">{c.other.name}</T>
-                    <T variant="small">{[c.other.role, c.other.company].filter(Boolean).join(' · ')}</T>
-                  </View>
-                  <Pressable
-                    onPress={() => Linking.openURL(`mailto:${c.other.email}`)}
-                    hitSlop={10}
-                    className="bg-snow/5 rounded-pill px-3 py-2"
-                  >
-                    <Ionicons name="mail" size={16} color="#D17F5D" />
-                  </Pressable>
-                </View>
-              </Card>
-            ))
-          ) : (
-            <Card>
-              <T variant="body" className="text-cloud/80">
-                Scan someone's QR to start your contact list. Long-press your own to share.
-              </T>
-            </Card>
+          {!!cards?.length && (
+            <Section className="gap-y-3">
+              <SectionHeading
+                title="Business Cards"
+                subtitle="Cards you’ve photographed, with the details we read from them."
+              />
+              {cards.map((card) => (
+                <BusinessCardRow key={card.id} card={card} />
+              ))}
+            </Section>
           )}
-        </View>
-      </View>
+        </>
+      )}
+
+      <Section>
+        <NeedHelp />
+      </Section>
 
       {showQr && me && (
         <QrModal
           token={me.qr_token}
           name={me.name}
-          subtitle={[me.role, me.company].filter(Boolean).join(' · ')}
+          subtitle={[me.role, me.company].filter(Boolean).join(' | ') || undefined}
           onClose={() => setShowQr(false)}
         />
       )}
-      {showScanner && (
-        <ScannerModal
-          onClose={() => setShowScanner(false)}
-          onScanned={(token) => handleScan.mutate(token)}
-        />
-      )}
-    </Screen>
+    </SubScreen>
   );
 }

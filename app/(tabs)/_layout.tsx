@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { useAttendee } from '@/lib/hooks/useAttendee';
+import { useProfile } from '@/lib/hooks/useProfile';
 import { registerForPush } from '@/lib/push';
 import { IS_DEMO } from '@/lib/demo';
 import { TabBar } from '@/components/TabBar';
@@ -19,7 +20,10 @@ import { TabBar } from '@/components/TabBar';
  */
 export default function TabsLayout() {
   const session = useAppStore((s) => s.session);
+  // The account's registration (attendee row) and the person (profile) — an
+  // account without a registration still has a profile.
   const { data: attendee } = useAttendee();
+  useProfile();
 
   useEffect(() => {
     if (IS_DEMO) return;
@@ -28,7 +32,8 @@ export default function TabsLayout() {
     }
   }, [attendee?.id]);
 
-  if (!session && !IS_DEMO) return <Redirect href="/(auth)/welcome" />;
+  // Demo included: signing out of the demo lands on Welcome too.
+  if (!session) return <Redirect href="/(auth)/welcome" />;
 
   return (
     <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>

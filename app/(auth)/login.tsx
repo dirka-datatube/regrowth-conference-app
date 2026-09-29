@@ -1,65 +1,160 @@
-import { useState } from 'react';
-import { TextInput, View, Alert } from 'react-native';
-import { router } from 'expo-router';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Button } from '@/components/Button';
-import { sendMagicLink, UnregisteredEmailError } from '@/lib/auth';
+import { useEffect, useRef, useState } from 'react';
+import { View, type TextInput } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { AuthScreen } from '@/components/auth/AuthScreen';
+import { AuthField } from '@/components/auth/AuthField';
+import { PillButton } from '@/components/auth/PillButton';
+import { Checkbox } from '@/components/auth/Checkbox';
+import { AuthLink } from '@/components/auth/AuthLink';
+import { FormMessage } from '@/components/auth/FormMessage';
+import {
+  AuthFlowError,
+  emailProblem,
+  getRememberMe,
+  logInProblems,
+  normaliseEmail,
+  resendConfirmation,
+  sendMagicLink,
+  signIn,
+  toAuthFlowError,
+} from '@/lib/auth';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+/**
+ * Log in — Figma "Log in Screen" (25:260).
+ *
+ * The comp's "Username" is Email: accounts are email-based. Two lines below
+ * LOG IN are additions the comp has no room for: the email sign-in link — the
+ * way in the app launched with, kept as the fallback and the route for anyone
+ * whose account has no password yet — and the way to Sign up.
+ *
+ * On success the (auth) layout sees the session and moves into the app.
+ */
+export default function LogIn() {
+  const params = useLocalSearchParams<{ email?: string }>();
+  const [email, setEmail] = useState(params.email ?? '');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+  const [busy, setBusy] = useState<'password' | 'link' | 'resend' | null>(null);
+  const [problem, setProblem] = useState<AuthFlowError | null>(null);
+  const passwordRef = useRef<TextInput>(null);
 
-  async function submit() {
-    if (!email.includes('@')) {
-      Alert.alert("Let's try that again", 'Please enter the email you registered with.');
-      return;
-    }
+  useEffect(() => {
+    getRememberMe().then(setRemember);
+  }, []);
+
+  const errors = submitted ? logInProblems(email, password) : {};
+
+  async function run(kind: NonNullable<typeof busy>, task: () => Promise<void>) {
+    setProblem(null);
+    setBusy(kind);
     try {
-      setLoading(true);
-      await sendMagicLink(email);
-      router.replace({ pathname: '/(auth)/check-email', params: { email } });
-    } catch (e: any) {
-      if (e instanceof UnregisteredEmailError) {
-        Alert.alert(
-          "We couldn't find your registration",
-          'This email isn\'t on our attendee list yet. Please use the email you registered with, or reach out to the REGROWTH team and we\'ll get you sorted.',
-        );
-      } else {
-        Alert.alert('Hmm, that didn\'t go through', e?.message ?? 'Please try again in a moment.');
-      }
+      await task();
+    } catch (e) {
+      setProblem(toAuthFlowError(e));
     } finally {
-      setLoading(false);
+      setBusy(null);
     }
   }
 
-  return (
-    <Screen>
-      <View className="pt-8">
-        <T variant="caption">Sign in</T>
-        <T variant="h1" className="mt-3">Let's get you in</T>
-        <T variant="body" className="mt-3 text-cloud/80">
-          Use the email you registered with. We'll send you a link to tap.
-        </T>
+  function logIn() {
+    setSubmitted(true);
+    setProblem(null);
+    if (Object.keys(logInProblems(email, password)).length) return;
+    run('password', () => signIn({ email, password, remember }));
+  }
 
-        <View className="mt-8">
-          <T variant="caption" className="mb-2">Email</T>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            placeholder="you@regrowth.au"
-            placeholderTextColor="#8A8DA6"
-            className="bg-snow/5 border border-snow/15 rounded-card px-4 py-4 text-snow font-body text-body"
+  function emailLink() {
+    if (emailProblem(email)) {
+      setProblem(new AuthFlowError('bad-email', 'Enter your email above and we’ll send you a sign-in link.'));
+      return;
+    }
+    run('link', async () => {
+      await sendMagicLink(email);
+      router.push({ pathname: '/(auth)/check-email', params: { email: normaliseEmail(email), mode: 'link' } });
+    });
+  }
+
+  function resend() {
+    run('resend', async () => {
+      await resendConfirmation(email);
+      router.push({ pathname: '/(auth)/check-email', params: { email: normaliseEmail(email), mode: 'confirm' } });
+    });
+  }
+
+  return (
+    <AuthScreen title="Welcome back!" subtitle="Enter your details below">
+      <View className="gap-y-5">
+        <AuthField
+          label="Email"
+          align="center"
+          value={email}
+          onChangeText={setEmail}
+          error={errors.email}
+          inputMode="email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          // The account identifier, so password managers pair it with the password.
+          autoComplete="username"
+          textContentType="username"
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => passwordRef.current?.focus()}
+        />
+        <AuthField
+          ref={passwordRef}
+          label="Password"
+          align="center"
+          secure
+          value={password}
+          onChangeText={setPassword}
+          error={errors.password}
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="current-password"
+          textContentType="password"
+          returnKeyType="go"
+          onSubmitEditing={logIn}
+        />
+      </View>
+
+      <View className="mt-[18px] flex-row items-center justify-between">
+        <Checkbox label="Remember me" checked={remember} onChange={setRemember} />
+        <AuthLink
+          label="Forgot your password?"
+          size={11}
+          onPress={() => router.push({ pathname: '/(auth)/forgot', params: email.trim() ? { email: email.trim() } : {} })}
+        />
+      </View>
+
+      {problem ? (
+        <View className="mt-6">
+          <FormMessage
+            message={problem.message}
+            action={
+              problem.problem === 'unconfirmed' && busy === null
+                ? { label: 'Send the confirmation email again', onPress: resend }
+                : null
+            }
           />
         </View>
+      ) : null}
 
-        <View className="mt-6">
-          <Button label="Send magic link" loading={loading} onPress={submit} />
-        </View>
+      <View className="mt-10 items-center">
+        <PillButton label="Log in" onPress={logIn} loading={busy === 'password'} disabled={busy !== null && busy !== 'password'} />
       </View>
-    </Screen>
+
+      <View className="mt-6 items-center gap-y-3">
+        <AuthLink
+          action
+          underline
+          label={busy === 'link' ? 'Sending your sign-in link…' : 'Email me a sign-in link instead'}
+          disabled={busy !== null}
+          onPress={emailLink}
+        />
+        <AuthLink lead="New here?" label="Create an account" underline onPress={() => router.navigate('/(auth)/signup')} />
+      </View>
+    </AuthScreen>
   );
 }

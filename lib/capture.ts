@@ -113,3 +113,20 @@ export function isInAppBrowser(): boolean {
   if (!ua) return false;
   return /FBAN|FBAV|Instagram|LinkedInApp|Twitter|Line\/|MicroMessenger|OutlookMobile/i.test(ua);
 }
+
+/**
+ * Whether the page may start capture without a fresh tap. Browsers only open
+ * the microphone's audio meter or a file picker for a page the person has
+ * interacted with: `sticky` once they have tapped anywhere in it, `transient`
+ * for a few seconds after a tap. A capture screen reached by tapping a capture
+ * button can start straight away; a link opened cold waits for a tap. Native
+ * has no such rule. Unknown (older browsers) counts as no.
+ */
+export function hasUserActivation(scope: 'sticky' | 'transient' = 'sticky'): boolean {
+  if (Platform.OS !== 'web') return true;
+  const activation = (
+    globalThis as unknown as { navigator?: { userActivation?: { hasBeenActive: boolean; isActive: boolean } } }
+  ).navigator?.userActivation;
+  if (!activation) return false;
+  return scope === 'transient' ? activation.isActive : activation.hasBeenActive;
+}

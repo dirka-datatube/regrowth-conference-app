@@ -1,82 +1,138 @@
-import { useMemo, useState } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '@/components/Screen';
-import { T } from '@/components/Type';
-import { Card } from '@/components/Card';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/lib/store';
-import { IS_DEMO, demoPartners } from '@/lib/demo';
 
-const FILTERS = ['all', 'recruitment', 'tech', 'marketing', 'banking', 'training'] as const;
-type Filter = (typeof FILTERS)[number];
+import { SubScreen } from '@/components/SubScreen';
+import { Section } from '@/components/TabScreen';
+import { SectionHeading } from '@/components/SectionHeading';
+import { ServiceCard, type Service } from '@/components/profile/ServiceCard';
+import { CtaButton } from '@/components/profile/CtaButton';
+import { openSupport } from '@/lib/content';
+import { env } from '@/lib/env';
+import { IS_DEMO } from '@/lib/demo';
+import { demoServicesTestimonial } from '@/lib/demo-profile';
+import { learningGradient, colors } from '@/lib/theme';
 
-// Curated partner offerings tagged by problem (recruitment, tech, marketing,
-// etc.). Filter by attendee role.
-export default function Solutions() {
-  const eventId = useAppStore((s) => s.attendee?.event_id);
-  const [filter, setFilter] = useState<Filter>('all');
+/**
+ * REGROWTH Services — Figma v2 (217:1795). Built from the frame name, the
+ * Profile menu copy and v2 patterns; re-check against 217:1795 when Figma reads
+ * are available.
+ *
+ * An introduction, REGROWTH's five service lines — the programs Continue
+ * Learning points to — a testimonial and a closing call to action. Every
+ * Enquire opens the support chat with the question already written. Replaces
+ * the pre-v2 partner-solutions list; partners have their own screen.
+ *
+ * The testimonial is demo-only until REGROWTH supplies a real one: a quote is
+ * a claim about a real client.
+ */
 
-  const { data: partners } = useQuery({
-    queryKey: ['partners-solutions', eventId],
-    enabled: !!eventId,
-    queryFn: async () => {
-      if (IS_DEMO) return demoPartners;
-      const { data, error } = await supabase
-        .from('partners')
-        .select('id, name, description, solutions_content, tags')
-        .eq('event_id', eventId!)
-        .not('solutions_content', 'is', null);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+const SERVICES: Service[] = [
+  {
+    key: 'coaching',
+    icon: 'people-circle-outline',
+    title: 'Coaching',
+    tagline: 'One-on-one and team coaching',
+    body: 'Regular sessions with a REGROWTH coach to set clear goals, sharpen your systems and stay accountable to the numbers that matter.',
+    includes: ['Individual and team programs', 'Goal setting and business planning', 'A regular rhythm of check-ins'],
+  },
+  {
+    key: 'workshops',
+    icon: 'easel-outline',
+    title: 'Workshops',
+    tagline: 'Hands-on sessions for your team',
+    body: 'Practical, interactive workshops on prospecting, listing, negotiation and leadership — run in your office or as open sessions.',
+    includes: ['In-office or open sessions', 'Built around real scenarios', 'Tools your team can use the next day'],
+  },
+  {
+    key: 'online',
+    icon: 'laptop-outline',
+    title: 'Online Training',
+    tagline: 'Learn at your own pace',
+    body: 'On-demand courses your team can work through anywhere, at the pace that suits them, with templates to put each lesson to work.',
+    includes: ['Watch anywhere, any time', 'Courses for every stage of a career', 'Templates and worksheets alongside'],
+  },
+  {
+    key: 'leadership',
+    icon: 'ribbon-outline',
+    title: 'Leadership Development',
+    tagline: 'For principals and team leaders',
+    body: 'Programs for leaders building high-performing teams: recruiting well, leading culture and growing a business that runs without you.',
+    includes: ['Recruitment and retention', 'Culture and team performance', 'Business growth strategy'],
+  },
+  {
+    key: 'events',
+    icon: 'airplane-outline',
+    title: 'Events & Study Tours',
+    tagline: 'Navigate and the REGROWTH Study Tour',
+    body: 'Our annual Navigate conference and the REGROWTH Study Tour bring the industry together to learn, connect and see great businesses up close.',
+    includes: ['Navigate — REGROWTH’s annual conference', 'Study Tour — a bespoke, world-class experience', 'Time with peers from across the industry'],
+  },
+];
 
-  const filtered = useMemo(() => {
-    if (!partners) return [];
-    if (filter === 'all') return partners;
-    return partners.filter((p) => p.tags?.includes(filter));
-  }, [partners, filter]);
+const gradient = Platform.select({
+  web: { backgroundImage: learningGradient.web },
+  default: { backgroundColor: learningGradient.native },
+}) as object;
+
+/** Opens the support chat with the question written; an external support link wins when set. */
+function enquire(topic: string) {
+  if (env.supportUrl) {
+    openSupport();
+    return;
+  }
+  router.push({ pathname: '/support', params: { draft: `Hi REGROWTH team, I’d like to know more about ${topic}.` } });
+}
+
+export default function Services() {
+  const testimonial = IS_DEMO ? demoServicesTestimonial : null;
 
   return (
-    <Screen>
-      <View className="flex-row items-center pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-        </Pressable>
-        <T variant="caption" className="ml-2">Solutions</T>
-      </View>
-      <T variant="h1" className="mt-2">Solutions for your business</T>
+    <SubScreen title="REGROWTH Services" subtitle="Discover how we can support your business">
+      <Section>
+        <View style={gradient} className="gap-y-2 rounded-card border border-hairline p-5">
+          <Text className="font-data text-[20px] font-bold text-snow">Grow with REGROWTH</Text>
+          <Text className="font-body text-[14px] leading-[21px] text-lede">
+            REGROWTH partners with real estate agents, leaders and business owners to build stronger businesses —
+            through coaching, training, leadership programs and the events that bring the industry together.
+          </Text>
+        </View>
+      </Section>
 
-      <View className="flex-row flex-wrap gap-2 mt-4">
-        {FILTERS.map((f) => (
-          <Pressable
-            key={f}
-            onPress={() => setFilter(f)}
-            className={`rounded-pill px-3 py-1 ${filter === f ? 'bg-earth' : 'bg-snow/5 border border-snow/15'}`}
-          >
-            <T variant="caption" className={`normal-case tracking-normal ${filter === f ? 'text-snow' : 'text-cloud'}`}>
-              {f}
-            </T>
-          </Pressable>
+      <Section className="gap-y-3">
+        <SectionHeading title="Our Services" subtitle="Programs for agents, leaders and teams" />
+        {SERVICES.map((s) => (
+          <ServiceCard
+            key={s.key}
+            service={s}
+            onEnquire={() => enquire(s.title)}
+            secondary={s.key === 'events' ? { label: 'View Events', onPress: () => router.navigate('/events') } : undefined}
+          />
         ))}
-      </View>
+      </Section>
 
-      <View className="mt-6 gap-y-3">
-        {filtered.map((p) => (
-          <Card key={p.id} onPress={() => router.push(`/partners/${p.id}`)}>
-            <T variant="h3">{p.name}</T>
-            {p.description && <T variant="body" className="mt-1 text-cloud/80" numberOfLines={2}>{p.description}</T>}
-            {p.solutions_content && (
-              <T variant="small" className="mt-3 text-cloud/70" numberOfLines={3}>
-                {p.solutions_content}
-              </T>
-            )}
-          </Card>
-        ))}
-      </View>
-    </Screen>
+      {testimonial && (
+        <Section>
+          <View className="gap-y-3 rounded-card border border-hairline bg-well p-5">
+            <Ionicons name="chatbox-ellipses-outline" size={26} color={colors.earth} />
+            <Text className="font-body text-[16px] italic leading-[24px] text-snow">“{testimonial.quote}”</Text>
+            <View>
+              <Text className="font-data text-[14px] font-bold text-snow">{testimonial.name}</Text>
+              <Text className="font-data text-[12px] text-quiet">{testimonial.role}</Text>
+            </View>
+          </View>
+        </Section>
+      )}
+
+      <Section>
+        <View style={gradient} className="items-start gap-y-3 rounded-card border border-hairline p-5">
+          <Text className="font-data text-[18px] font-bold text-snow">Not sure where to start?</Text>
+          <Text className="font-data text-[14px] font-medium leading-[20px] text-lede">
+            Tell us about your business and where you want to take it, and we’ll point you to the right program.
+          </Text>
+          <CtaButton label="Talk to Our Team" icon="chatbubbles-outline" onPress={() => enquire('working with REGROWTH')} />
+        </View>
+      </Section>
+    </SubScreen>
   );
 }

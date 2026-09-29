@@ -1,12 +1,13 @@
-// Browser smoke test for the demo export — the Sprint 07 definition of done.
+// Browser smoke test for the demo export.
 //
 //   npm run build:web:demo && npm run test:smoke
 //
-// Serves dist-demo and opens every tab, My Tickets, and the page a scanned
-// badge opens, at 402×874 in both registration states. Fails on any console
-// error, page error, or missing state marker. Then decodes the badge QR on
-// Profile and the ticket QR on Events, and checks both carry the attendee's
-// badge URL.
+// Serves dist-demo and opens every screen — the tabs, both event guides,
+// Connect, Profile, notes, the signed-out account screens and the page a
+// scanned badge opens — at 402×874 in both registration states. Fails on any
+// console error, page error, or missing state marker. Then decodes the badge
+// QR on Profile and the ticket QR on Events, checks both carry the attendee's
+// badge URL, and walks sign out → log in.
 //
 // SMOKE_SHOTS=<dir> also saves a screenshot of every page.
 
@@ -75,6 +76,46 @@ const ALL_PAGES = [
   { path: '/connect/referral', name: 'referral', both: ['Find A Referral', 'Referrals are on their way'] },
   { path: '/scan', name: 'scan', tabBar: false, both: ['Upload From Gallery', 'No camera available'] },
   { path: '/support', name: 'support', tabBar: false, both: ['REGROWTH Assistant', 'Open Venue Map'] },
+
+  // Event guides
+  { path: `/events/${NAV}`, name: 'event-home', both: ['Quick Access', 'What’s Coming', 'Meet Our Partners'] },
+  { path: `/events/${NAV}/welcome`, name: 'event-welcome', unregistered: ['Ask about tickets'], both: ['Explore the event'] },
+  { path: `/events/${NAV}/agenda`, name: 'agenda', both: ['MARCH 15, 2027', 'Opening Keynote: Navigate 2027'] },
+  { path: `/events/${NAV}/session/sess1`, name: 'session', registered: ['Saved to your schedule'], unregistered: ['Ask about tickets'], both: ['Opening Keynote: Navigate 2027'] },
+  { path: `/events/${NAV}/speakers`, name: 'speakers', both: ['About Kylie'] },
+  { path: `/events/${NAV}/speaker/s1`, name: 'speaker', both: ['Kylie Walsh'] },
+  { path: `/events/${NAV}/map`, name: 'map', both: ['Quick Directory'] },
+  { path: `/events/${NAV}/hotel`, name: 'hotel', both: ['REGROWTH GUEST BOOKING CODE'] },
+  { path: `/events/${NAV}/pack`, name: 'pack', both: ['Essentials'] },
+  { path: `/events/${NAV}/weather`, name: 'weather', both: ['Hourly Forecast', 'Perth'] },
+  { path: `/events/${TOUR}`, name: 'tour-home', both: ['Quick Access', 'What’s Coming'] },
+  { path: `/events/${TOUR}/agenda`, name: 'tour-agenda', both: ['JUNE 2, 2027'] },
+  { path: `/events/${TOUR}/weather`, name: 'tour-weather', both: ['Hourly Forecast', 'Melbourne'] },
+
+  // Profile
+  { path: '/me/edit', name: 'edit-profile', both: ['About You', 'Interests'] },
+  { path: '/me/saved', name: 'saved', registered: ['Opening Keynote: Navigate 2027'], both: ['Saved Sessions'] },
+  { path: '/me/connections', name: 'connections', registered: ['Olivia Brown'], unregistered: ['No connections yet'], both: ['Networking Connections'] },
+  { path: '/me/card', name: 'card', both: ['Scan a Business Card'] },
+  { path: '/me/resources', name: 'resources', both: ['Templates & Resources'] },
+  { path: '/me/services', name: 'services', both: ['REGROWTH Services', 'Our Services'] },
+  { path: '/me/settings', name: 'settings', both: ['App Settings', 'Sign out'] },
+  { path: '/me/rate', name: 'rate', both: ['Rate App'] },
+  { path: '/me/privacy', name: 'privacy', both: ['Privacy Policy'] },
+  { path: '/me/terms', name: 'terms', both: ['Terms & Conditions'] },
+  { path: '/me/contact', name: 'contact', both: ['Send us a message'] },
+  { path: '/legal/privacy', name: 'legal', tabBar: false, both: ['Privacy Policy'] },
+
+  // Notes
+  { path: '/notes/new', name: 'note-new', tabBar: false, registered: ['Navigate 2027', 'Saves as you type'], unregistered: ['Notes unlock with registration'], both: ['Create Note'] },
+  { path: '/notes/n1', name: 'note', tabBar: false, registered: ['Consistency beats intensity', 'AI Summary'] },
+
+  // Accounts: signed out. A link may open each of these directly.
+  { path: '/welcome', name: 'auth-welcome', tabBar: false, both: ['Log in', 'Create account'] },
+  { path: '/login', name: 'login', tabBar: false, both: ['Welcome back!', 'Forgot your password?'] },
+  { path: '/signup', name: 'signup', tabBar: false, both: ['Create your account', 'Already have an account?'] },
+  { path: '/forgot', name: 'forgot', tabBar: false, both: ['Forgot your password?', 'Send link'] },
+  { path: '/check-email', name: 'check-email', tabBar: false, both: ['Confirm your email', 'Open the link in the email'] },
 ];
 
 // SMOKE_ONLY=home,alerts runs a subset.
@@ -148,6 +189,34 @@ for (const registered of [true, false]) {
     console.log(`  ${errors.length ? '✗' : '✓'} ${p.name}`);
     await page.close();
   }
+}
+
+// Sign out from App Settings, then log back in.
+if (!only || only.includes('auth-flow')) {
+  console.log('\naccounts');
+  const page = await context.newPage();
+  const errors = [];
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  page.on('pageerror', (e) => errors.push(String(e)));
+  try {
+    await page.goto(`${base}/me/settings`, { waitUntil: 'networkidle' });
+    await page.getByRole('button', { name: 'Sign out' }).first().click();
+    await page.getByText('Sign Out', { exact: true }).click(); // the confirm dialog
+    await page.getByText('Create account').first().waitFor({ timeout: 10_000 });
+    console.log('  ✓ sign out → Welcome');
+    await page.getByText('Log in', { exact: true }).first().click();
+    await page.getByText('Welcome back!').first().waitFor({ timeout: 10_000 });
+    await page.getByLabel('Email', { exact: true }).fill('kylie@regrowth.example');
+    await page.getByLabel('Password', { exact: true }).fill('correct-horse');
+    await page.getByRole('button', { name: 'Log in' }).last().click();
+    await page.getByText('Quick Access').first().waitFor({ timeout: 10_000 });
+    console.log('  ✓ log in → Home');
+  } catch (e) {
+    fail(`accounts: sign out → log in did not complete — ${String(e).split('\n')[0]}`);
+    if (SHOTS) await page.screenshot({ path: join(SHOTS, 'auth-flow-failure.png'), fullPage: true });
+  }
+  for (const e of errors) fail(`accounts: console error — ${e}`);
+  await page.close();
 }
 
 await browser.close();

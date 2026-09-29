@@ -111,8 +111,9 @@ export default function EventHome() {
   const [refreshing, setRefreshing] = useState(false);
 
   const ticket = isRegisteredFor(eventId) ? tickets.find((t) => t.eventId === eventId) : undefined;
+  const profile = useAppStore((s) => s.profile);
   const name = attendee?.name ?? '';
-  const first = firstName(name);
+  const first = firstName(profile?.first_name || name);
 
   async function refresh() {
     setRefreshing(true);

@@ -30,6 +30,9 @@ export function TabScreen({
         className="flex-1"
         contentContainerStyle={{ paddingTop: 20, paddingBottom: 200, rowGap: 24 }}
         refreshControl={refreshControl}
+        // A tap on Save or Send lands the first time, rather than only
+        // dismissing the keyboard (native).
+        keyboardShouldPersistTaps="handled"
       >
         {children}
       </ScrollView>

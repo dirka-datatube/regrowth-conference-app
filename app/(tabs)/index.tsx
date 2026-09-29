@@ -14,6 +14,7 @@ import { NeedHelp } from '@/components/NeedHelp';
 import { ContinueLearning } from '@/components/ContinueLearning';
 import { useAppStore } from '@/lib/store';
 import { useRegistrations } from '@/lib/hooks/useRegistrations';
+import { firstName } from '@/lib/hooks/useProfile';
 import { NAVIGATE, PRODUCTS, eventHref } from '@/lib/events';
 import { FEATURED } from '@/lib/content';
 import { canRecordInBackground, needsNativeApp, nativeAppLink } from '@/lib/capture';
@@ -28,9 +29,8 @@ import { colors } from '@/lib/theme';
  * 180:588) in one screen. Registration decides each hero's badge and call to
  * action.
  *
- * August's live panels (happening now, up next, people to meet) move to the
- * event sub-app in Sprint 10, where the comp puts them; their hooks stay in
- * lib/hooks.
+ * August's live panels (happening now, up next) moved to the event home's
+ * What's Coming feed (lib/hooks/useEventFeed.ts), where the comp puts them.
  */
 
 const QUICK_ACCESS: QuickAccessItem[] = [
@@ -57,7 +57,8 @@ export default function Home() {
     setRefreshing(false);
   }
 
-  const firstName = (attendee?.name ?? '').split(' ')[0] || 'there';
+  const profile = useAppStore((s) => s.profile);
+  const first = firstName(profile, attendee) || 'there';
 
   // The only searchable content the app holds today is the attendee's own
   // notes, so Home search hands off to Insights rather than pretending to be
@@ -92,7 +93,7 @@ export default function Home() {
           )}
           <View className="flex-1">
             <Text className="font-data text-[20px] text-snow" numberOfLines={1}>
-              Hello, {firstName}
+              Hello, {first}
             </Text>
             <Text className="mt-1 font-body text-[13px] text-snow">Welcome to REGROWTH</Text>
           </View>

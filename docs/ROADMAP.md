@@ -48,6 +48,15 @@
   takes App Store review off the November critical path). See
   [`DESIGN-REVIEW-2026-09.md`](DESIGN-REVIEW-2026-09.md) and
   [`EPIC-DESIGN-V2.md`](EPIC-DESIGN-V2.md).
+- 2026-09-29 — **Open sign-up with email and password (Decision 1).** Anyone
+  can create an account, most with a company email; registering for an event
+  is what unlocks it. An account links to its registration by email, so
+  Supabase Auth must keep email confirmation on. Migrations `open_signup`,
+  `support_chat` and `app_feedback` are applied to production.
+- 2026-09-29 — **Every Figma v2 screen is built as a clickable demo**, on
+  Vercel (`regrowth-conference-app`, behind Vercel login). The build is the
+  demo export: canned data, no backend. See the epic's progress section for
+  what is real and what is still to wire.
 
 ---
 

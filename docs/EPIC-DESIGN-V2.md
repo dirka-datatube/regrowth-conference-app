@@ -26,6 +26,26 @@ the hybrid-wrapper decision.
 Sprints are one week, bounded by the Friday working days in the SOW. Sprint 12
 is two weeks and ends at the 13 November go/no-go.
 
+## Progress — 29 September
+
+**Every screen in the file is built and clickable** in the demo build
+(`npm run build:web:demo`), deployed to the Vercel project
+`regrowth-conference-app` (team DataTube, behind Vercel login). The browser
+smoke test opens 49 screens in both registration states and walks sign out →
+log in with no console errors.
+
+| Area | Screens | Real backend today |
+| --- | --- | --- |
+| Accounts (S08) | Welcome, Log in, Sign up, Forgot, Reset, Check email, auth callback | Email + password sign-up and linking by email (migration `open_signup`, applied) |
+| Event guide (S10) | Event home, Welcome, Agenda, Session, Speakers, Speaker, Map, Hotel, Pack, Weather — for both events | Sessions, speakers, saves and follows; map, hotel, packing and updates read `events.settings` (to fill); weather from Open-Meteo |
+| Connect (S11) | Community, attendee profile, Partners, partner, Podcast, Referral, Scan QR, support chat | Support chat stores messages (`support_messages`, applied); referral waits on **Decision 5** |
+| Profile (S11) | Edit profile, Saved sessions, Connections, Scan a card, Resources, Services, Settings, Rate, Privacy, Terms, Contact | Rate and Contact write `app_feedback` (applied); resources have no files yet; Privacy and Terms are drafts for REGROWTH to replace |
+| Insights (S13) | Create note, recording, note detail | Notes save as you type; the web records audio with a live transcript; recordings stay on the device until a note-media bucket exists |
+
+Still to do for Phase 1: the `registrations` split (one account, many
+registrations), the Stripe → registration loop (S09), real content and
+assets, fonts, and the production domain.
+
 ---
 
 ## Phase 1 — launch-ready by 16 November
@@ -51,7 +71,7 @@ states.
 and a browser smoke test pass.
 
 ### Sprint 08 — Accounts and the registration model
-**2 – 8 Oct** · **blocked on Decision 1**
+**2 – 8 Oct** · Decision 1 answered 29 Sep: open email + password sign-up
 
 Anyone can create an account; registration is what unlocks an event.
 
@@ -157,7 +177,7 @@ Event content load; on-site UAT at the venue; polls and surveys if designed
 
 | # | Decision | Blocks | Recommendation |
 | --- | --- | --- | --- |
-| 1 | **Auth model** — email + password with open sign-up, as designed, replacing magic links and the pre-registered-only rule? | S08 | Adopt the design. Supabase supports both; keep magic links as a fallback sign-in |
+| 1 | ~~**Auth model**~~ — **decided 29 Sep: open email + password sign-up**, as designed. Most people use a company email | S08 | Done: sign-up screens built, `open_signup` applied. Magic links stay as a fallback sign-in |
 | 2 | **Navigate 2027 venue** — the comps say Moscone, Sofitel Wentworth and "Crown" | S12 | Confirm with Kylie; the repo seeds Crown Towers Perth |
 | 3 | **Support chat** — real in-app chat with a staff inbox, or a WhatsApp / email link for v1? | S14 | Link-out for launch; real chat for the event |
 | 4 | **Speech-to-text provider** for live transcription | S13 | Choose on cost per hour of audio |

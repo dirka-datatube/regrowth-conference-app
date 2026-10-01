@@ -26,14 +26,22 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "regrowth://"
-additional_redirect_urls = ["regrowth://", "exp://localhost:8081"]
+site_url = "http://localhost:8081"
+additional_redirect_urls = [
+  "http://localhost:8081/auth-callback",
+  "https://app.regrowth.au/auth-callback",
+  "regrowth://auth-callback",
+  "exp://localhost:8081",
+]
 jwt_expiry = 3600
-enable_signup = false
+enable_signup = true
 enable_anonymous_sign_ins = false
+# Open email + password sign-up (decided 2026-09-29). Sign-up links an account
+# to its registrations by email, so email confirmation must stay on.
+minimum_password_length = 8
 
 [auth.email]
-enable_signup = false
+enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 

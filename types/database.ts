@@ -28,11 +28,15 @@ export type Database = {
       daily_suggestions: { Row: DailySuggestion; Insert: Partial<DailySuggestion>; Update: Partial<DailySuggestion> };
       admin_users: { Row: AdminUser; Insert: Partial<AdminUser>; Update: Partial<AdminUser> };
       audit_log: { Row: AuditLog; Insert: Partial<AuditLog>; Update: Partial<AuditLog> };
+      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
+      support_messages: { Row: SupportMessageRow; Insert: Partial<SupportMessageRow>; Update: Partial<SupportMessageRow> };
+      app_feedback: { Row: AppFeedback; Insert: Partial<AppFeedback>; Update: Partial<AppFeedback> };
     };
   };
 };
 
 export type AttendeeVisibility = 'public' | 'connections_only' | 'hidden';
+export type RegistrationStatus = 'pending' | 'confirmed' | 'cancelled';
 export type SessionType =
   | 'keynote'
   | 'panel'
@@ -84,6 +88,9 @@ export type Attendee = {
   notification_prefs: Record<NotificationCategory, boolean> & Record<string, boolean>;
   checked_in_at: string | null;
   last_seen_at: string | null;
+  /** Migration 20260925000000. An attendee row is a registration until Sprint 08. */
+  ticket_tier: string | null;
+  registration_status: RegistrationStatus;
   created_at: string;
   updated_at: string;
 };
@@ -180,6 +187,12 @@ export type Note = {
   id: string;
   attendee_id: string;
   session_id: string | null;
+  // Insights fields — migration 20260818000000_insights_notes
+  title: string | null;
+  event_id: string | null;
+  pinned: boolean;
+  important: boolean;
+  reminder_at: string | null;
   body: string;
   ai_summary: string | null;
   ai_summary_generated_at: string | null;
@@ -288,6 +301,55 @@ export type DailySuggestion = {
   suggested_attendee_ids: string[];
   suggested_partner_ids: string[];
   rationale: Record<string, string>;
+  created_at: string;
+};
+
+/**
+ * Migration 20260929000100. The person behind an account, registered or not;
+ * `id` is the auth.users id. The account owns `id` and `email` — people may
+ * update the other columns of their own row.
+ */
+export type Profile = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  photo_url: string | null;
+  company: string | null;
+  role: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Migration 20260929000200. The in-app support chat (/support): one thread per
+ * account. `user_id` defaults to the caller; staff replies carry the thread
+ * owner's id with `from_staff` set.
+ */
+export type SupportMessageRow = {
+  id: string;
+  user_id: string;
+  body: string;
+  from_staff: boolean;
+  needs_human: boolean;
+  created_at: string;
+};
+
+/**
+ * Migration 20260929000300. Rate App ratings and Contact messages. `user_id`
+ * defaults to the caller; the app only inserts.
+ */
+export type AppFeedback = {
+  id: string;
+  user_id: string | null;
+  kind: 'rating' | 'contact';
+  rating: number | null;
+  tags: string[];
+  subject: string | null;
+  message: string | null;
+  email: string | null;
+  name: string | null;
   created_at: string;
 };
 

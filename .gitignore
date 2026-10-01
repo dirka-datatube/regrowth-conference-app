@@ -48,3 +48,6 @@ supabase/.temp/
 
 # Sentry
 .sentryclirc
+
+# PWA build output
+dist-demo/
